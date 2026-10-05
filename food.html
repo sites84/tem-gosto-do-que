@@ -33,9 +33,8 @@
       const foodResult=await db.from('foods').select('*').eq('slug',slug).eq('status','published').maybeSingle();
       if(foodResult.error||!foodResult.data){page.innerHTML='<div class="section"><h1>Alimento não encontrado</h1><p>Esse alimento ainda não está publicado.</p></div>';return;}
       const food=foodResult.data;
-      const [cats,reports,history,steps,preps,sections,sources]=await Promise.all([
+      const [cats,history,steps,preps,sections,sources]=await Promise.all([
         db.from('food_categories').select('categories(name,slug)').eq('food_id',food.id),
-        db.from('taste_reports').select('report_summary,taste_description,texture_description,comparisons,preparation_method,source_id,sources(title,url)').eq('food_id',food.id).eq('status','published'),
         db.from('history_sections').select('title,period_label,content').eq('food_id',food.id).eq('status','published').order('display_order'),
         db.from('processing_steps').select('step_order,title,description,technique').eq('food_id',food.id).eq('status','published').order('step_order'),
         db.from('preparations').select('name,description,region,technique').eq('food_id',food.id).eq('status','published'),
@@ -59,7 +58,7 @@
         </section>
         <div class="section food-content">
           ${section('Perfil de sabor','Como é o sabor?',`<div class="taste-grid">${bars}</div><div class="two-columns"><div><h3>Textura</h3><p>${esc(food.texture)}</p></div><div><h3>Aroma</h3><p>${esc(food.aroma)}</p></div></div>`)}
-          ${section('A experiência','O que as pessoas que comeram dizem?',list(reports.data||[],r=>`<article class="report-card"><p>${esc(r.report_summary)}</p><div class="report-details"><span>${esc(r.taste_description)}</span>${r.comparisons?`<span>Comparação: ${esc(r.comparisons)}</span>`:''}${r.preparation_method?`<span>Preparo: ${esc(r.preparation_method)}</span>`:''}</div>${r.sources?`<p class="source-mini">Fonte: ${sourceLink(r.sources)}</p>`:''}</article>`))}
+          ${section('Relatos reunidos','O que as pessoas dizem?',`<article class="report-narrative"><p>${esc(food.taste_narrative||'Os relatos ainda estão sendo reunidos e comparados.')}</p></article>`)}
           ${section('Linha do tempo','A história da azeitona',list(history.data||[],h=>`<article class="timeline-item"><span>${esc(h.period_label)}</span><div><h3>${esc(h.title)}</h3><p>${esc(h.content)}</p></div></article>`))}
           ${section('Da árvore ao pote','Como a azeitona é preparada',list(steps.data||[],s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3><p>${esc(s.description)}</p>${s.technique?`<small>${esc(s.technique)}</small>`:''}</div></article>`))}
           ${section('Formas de preparo','Como pode ser curada',list(preps.data||[],p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}<p>${esc(p.description)}</p><small>${esc(p.technique)}</small></article>`))}
