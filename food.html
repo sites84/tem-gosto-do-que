@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Tem Gosto do Q? — investigação completa de um alimento.">
+  <title>Alimento | Tem Gosto do Q?</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header"><a class="brand" href="./">Tem Gosto do Q?</a><nav><a href="./#categorias">Categorias</a></nav></header>
+  <main class="section" id="food-page"><p class="loading">Carregando alimento...</p></main>
+  <footer class="site-footer"><span>Tem Gosto do Q?</span><span>Projeto em construção.</span></footer>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL='https://saipuhuzotusqfihvjgw.supabase.co';
+    const SUPABASE_KEY='sb_publishable_1LQ6Iy5AO8TB4JwtsdMokw_aWgFHHFc';
+    const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+    const page=document.querySelector('#food-page');
+    const slug=new URLSearchParams(location.search).get('slug');
+    const esc=v=>(v||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    async function load(){
+      if(!slug){page.innerHTML='<h1>Alimento não encontrado</h1><p>O endereço não contém um alimento.</p>';return;}
+      const {data,error}=await db.from('foods').select('*').eq('slug',slug).eq('status','published').maybeSingle();
+      if(error||!data){page.innerHTML='<h1>Alimento não encontrado</h1><p>Esse alimento ainda não está publicado.</p>';return;}
+      document.title=`${data.name} | Tem Gosto do Q?`;
+      page.innerHTML=`<p class="eyebrow">Investigação gastronômica</p><h1>${esc(data.name)}</h1><p class="hero-copy">${esc(data.short_taste_answer||'Descobrindo o sabor...')}</p><div class="intro"><h2>Tem gosto de quê?</h2><p>${esc(data.editorial_taste_description||data.summary||'Esta investigação ainda está sendo preparada.')}</p></div>`;
+    }
+    load();
+  </script>
+</body>
+</html>
