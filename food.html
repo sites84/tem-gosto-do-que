@@ -8,9 +8,15 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="site-header"><a class="brand" href="./">Tem Gosto do Q?</a><nav><a href="./#categorias">Categorias</a></nav></header>
-  <main class="section" id="food-page"><p class="loading">Carregando alimento...</p></main>
+  <header class="site-header">
+    <a class="brand" href="./">Tem Gosto do Q?</a>
+    <nav aria-label="Navegação principal"><a href="./#categorias">Categorias</a><a href="./#como-funciona">Como funciona</a></nav>
+  </header>
+
+  <main class="food-page" id="food-page"><p class="loading">Carregando investigação...</p></main>
+
   <footer class="site-footer"><span>Tem Gosto do Q?</span><span>Projeto em construção.</span></footer>
+
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const SUPABASE_URL='https://saipuhuzotusqfihvjgw.supabase.co';
@@ -18,13 +24,48 @@
     const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
     const page=document.querySelector('#food-page');
     const slug=new URLSearchParams(location.search).get('slug');
-    const esc=v=>(v||'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const esc=v=>String(v||'').replace(/[&<>\'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
+    const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'<p class="muted">Ainda não há informação publicada nesta seção.</p>';
+
     async function load(){
-      if(!slug){page.innerHTML='<h1>Alimento não encontrado</h1><p>O endereço não contém um alimento.</p>';return;}
-      const {data,error}=await db.from('foods').select('*').eq('slug',slug).eq('status','published').maybeSingle();
-      if(error||!data){page.innerHTML='<h1>Alimento não encontrado</h1><p>Esse alimento ainda não está publicado.</p>';return;}
-      document.title=`${data.name} | Tem Gosto do Q?`;
-      page.innerHTML=`<p class="eyebrow">Investigação gastronômica</p><h1>${esc(data.name)}</h1><p class="hero-copy">${esc(data.short_taste_answer||'Descobrindo o sabor...')}</p><div class="intro"><h2>Tem gosto de quê?</h2><p>${esc(data.editorial_taste_description||data.summary||'Esta investigação ainda está sendo preparada.')}</p></div>`;
+      if(!slug){page.innerHTML='<div class="section"><h1>Alimento não encontrado</h1><p>O endereço não contém um alimento.</p></div>';return;}
+      const foodResult=await db.from('foods').select('*').eq('slug',slug).eq('status','published').maybeSingle();
+      if(foodResult.error||!foodResult.data){page.innerHTML='<div class="section"><h1>Alimento não encontrado</h1><p>Esse alimento ainda não está publicado.</p></div>';return;}
+      const food=foodResult.data;
+      const [cats,reports,history,steps,preps,sections,sources]=await Promise.all([
+        db.from('food_categories').select('categories(name,slug)').eq('food_id',food.id),
+        db.from('taste_reports').select('report_summary,taste_description,texture_description,comparisons,preparation_method,source_id,sources(title,url)').eq('food_id',food.id).eq('status','published'),
+        db.from('history_sections').select('title,period_label,content').eq('food_id',food.id).eq('status','published').order('display_order'),
+        db.from('processing_steps').select('step_order,title,description,technique').eq('food_id',food.id).eq('status','published').order('step_order'),
+        db.from('preparations').select('name,description,region,technique').eq('food_id',food.id).eq('status','published'),
+        db.from('editorial_sections').select('title,content').eq('food_id',food.id).eq('status','published').order('display_order'),
+        db.from('food_sources').select('sources(title,url,source_type)').eq('food_id',food.id)
+      ]);
+      document.title=`${food.name} | Tem Gosto do Q?`;
+      const categoryNames=(cats.data||[]).map(x=>x.categories?.name).filter(Boolean);
+      const profile=[['Intensidade',food.taste_intensity],['Doçura',food.sweetness],['Acidez',food.acidity],['Amargor',food.bitterness],['Salinidade',food.salinity],['Umami',food.umami],['Gordura percebida',food.perceived_fat],['Aroma',food.aroma_intensity],['Firmeza',food.texture_firmness]];
+      const bars=profile.map(([name,value])=>`<div class="taste-meter"><div><span>${name}</span><strong>${value}/5</strong></div><div class="meter"><i style="width:${value*20}%"></i></div></div>`).join('');
+      const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||'Fonte')}</a>`:'';
+
+      page.innerHTML=`
+        <section class="food-hero">
+          <div class="food-hero-inner">
+            <p class="eyebrow">${esc(categoryNames.join(' · ')||'Investigação gastronômica')}</p>
+            <h1>${esc(food.name)}</h1>
+            ${food.scientific_name?`<p class="scientific">${esc(food.scientific_name)}</p>`:''}
+            <div class="answer-card"><span>Tem gosto de quê?</span><strong>${esc(food.short_taste_answer)}</strong><p>${esc(food.editorial_taste_description)}</p></div>
+          </div>
+        </section>
+        <div class="section food-content">
+          ${section('Perfil de sabor','Como é o sabor?',`<div class="taste-grid">${bars}</div><div class="two-columns"><div><h3>Textura</h3><p>${esc(food.texture)}</p></div><div><h3>Aroma</h3><p>${esc(food.aroma)}</p></div></div>`)}
+          ${section('A experiência','O que as pessoas que comeram dizem?',list(reports.data||[],r=>`<article class="report-card"><p>${esc(r.report_summary)}</p><div class="report-details"><span>${esc(r.taste_description)}</span>${r.comparisons?`<span>Comparação: ${esc(r.comparisons)}</span>`:''}${r.preparation_method?`<span>Preparo: ${esc(r.preparation_method)}</span>`:''}</div>${r.sources?`<p class="source-mini">Fonte: ${sourceLink(r.sources)}</p>`:''}</article>`))}
+          ${section('Linha do tempo','A história da azeitona',list(history.data||[],h=>`<article class="timeline-item"><span>${esc(h.period_label)}</span><div><h3>${esc(h.title)}</h3><p>${esc(h.content)}</p></div></article>`))}
+          ${section('Da árvore ao pote','Como a azeitona é preparada',list(steps.data||[],s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3><p>${esc(s.description)}</p>${s.technique?`<small>${esc(s.technique)}</small>`:''}</div></article>`))}
+          ${section('Formas de preparo','Como pode ser curada',list(preps.data||[],p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}<p>${esc(p.description)}</p><small>${esc(p.technique)}</small></article>`))}
+          ${section('Curiosidades','O que mais vale saber',list(sections.data||[],s=>`<article class="editorial-card"><h3>${esc(s.title)}</h3><p>${esc(s.content)}</p></article>`))}
+          ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.source_type)}</span>${sourceLink(s.sources)}</article>`))}
+        </div>`;
     }
     load();
   </script>
