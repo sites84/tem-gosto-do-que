@@ -10,42 +10,20 @@ const lines=text=>cleanText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
 const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
 const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'<p class="muted">Ainda não há informação publicada nesta seção.</p>';
 
-function splitEntries(text){
-  return lines(text);
-}
+function splitEntries(text){ return lines(text); }
 function parseMyths(content){
-  const blocks=cleanText(content).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
-  const rows=[];
-  let current=null;
-  for(const block of blocks){
-    const mito=block.match(/^MITO:\s*(.*?)(?:\n|$)([\s\S]*)$/i);
-    const verdade=block.match(/^VERDADE:\s*(.*)$/i);
-    if(mito){ current={q:mito[1].trim(),a:''}; rows.push(current); if(mito[2].trim()) current.a=mito[2].trim(); continue; }
-    if(verdade){ if(current) current.a=verdade[1].trim(); else rows.push({q:'Mito e verdade',a:verdade[1].trim()}); continue; }
-    const parts=block.split(/\n(?=VERDADE:\s*)/i);
-    if(parts.length>1){
-      const q=parts[0].replace(/^MITO:\s*/i,'').trim();
-      const a=parts[1].replace(/^VERDADE:\s*/i,'').trim();
-      rows.push({q,a});
-    }
-  }
-  if(!rows.length){
-    const normalized=cleanText(content).replace(/\s+/g,' ').trim();
-    const matches=[...normalized.matchAll(/MITO:\s*(.*?)(?=\s+VERDADE:)|VERDADE:\s*(.*?)(?=\s+MITO:|$)/gi)];
-    for(let i=0;i<matches.length;i+=2){
-      const q=(matches[i]?.[1]||'').trim();
-      const a=(matches[i+1]?.[2]||'').trim();
-      if(q||a) rows.push({q,a});
-    }
-  }
-  return rows;
+  return cleanText(content).split(/\n\s*\n/).map(block=>{
+    const ls=block.split(/\n+/).map(x=>x.trim()).filter(Boolean);
+    const q=(ls.find(x=>/^MITO:/i.test(x))||'').replace(/^MITO:\s*/i,'').trim();
+    const a=(ls.find(x=>/^VERDADE:/i.test(x))||'').replace(/^VERDADE:\s*/i,'').trim();
+    return {q,a};
+  }).filter(x=>x.q&&x.a);
 }
 function parseFaq(content){
-  const blocks=cleanText(content).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean);
-  return blocks.map(block=>{
-    const m=block.match(/^(.+?\?)\s*(?:—|-|:)?\s*([\s\S]*)$/);
-    return m?{q:m[1].trim(),a:m[2].trim()||'Resposta ainda não publicada.'}:{q:block,a:'Resposta ainda não publicada.'};
-  });
+  return cleanText(content).split(/\n\s*\n/).map(block=>{
+    const m=block.match(/^(.+?\?)\s*(?:—|-|:)\s*([\s\S]*)$/);
+    return m?{q:m[1].trim(),a:m[2].trim()}:{q:block,a:'Resposta ainda não publicada.'};
+  }).filter(x=>x.q);
 }
 function parseCuriosities(content){
   const normalized=cleanText(content).replace(/\r/g,'').trim();
@@ -98,9 +76,9 @@ async function load(){
       ${section('Da origem ao prato','Como '+food.name+' chega à mesa',list(steps.data||[],s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3>${paragraphs(s.description)}${s.technique?`<small>${esc(s.technique)}</small>`:''}${s.duration||s.temperature?`<div class="process-meta">${s.duration?`<span>${esc(s.duration)}</span>`:''}${s.temperature?`<span>${esc(s.temperature)}</span>`:''}</div>`:''}</div></article>`))}
       ${section('Preparo','Algumas formas de preparo',list(preps.data||[],p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}${paragraphs(p.description)}<small>${esc(p.technique)}</small></article>`))}
       ${extra.map(x=>section(x.section_type.replaceAll('_',' '),x.title,editorialBody(x.section_type,x.content))).join('')}
-      ${myths?section('Mitos e verdades',myths.title,editorialBody('myths',myths.content)):''}
-      ${faq?section('Perguntas frequentes',faq.title,editorialBody('faq',faq.content)):''}
-      ${section('Curiosidades','10 curiosidades',curios.length?`<div class="curiosity-list">${curios.map((c,i)=>`<details class="curiosity-item"><summary><span>${String(i+1).padStart(2,'0')}</span>${esc(c.text.split(/\.\s/)[0].replace(/^\d+\.\s*/,''))}</summary><div class="curiosity-answer">${paragraphs(c.text.replace(/^\d+\.\s*/,''))}</div></details>`).join('')}</div>`:'<p class="muted">As curiosidades ainda estão sendo reunidas.</p>')}
+      ${myths?section('Mitos e verdades','Mitos e verdades',editorialBody('myths',myths.content)):''}
+      ${faq?section('Perguntas frequentes','Perguntas frequentes',editorialBody('faq',faq.content)):''}
+      ${section('Curiosidades','10 curiosidades',curios.length?`<div class="curiosity-list">${curios.map(c=>`<details class="curiosity-item"><summary><span>${String(c.n).padStart(2,'0')}</span>${esc(c.text.split(/\.\s/)[0].replace(/^\d+\.\s*/,''))}</summary><div class="curiosity-answer">${paragraphs(c.text.replace(/^\d+\.\s*/,''))}</div></details>`).join('')}</div>`:'<p class="muted">As curiosidades ainda estão sendo reunidas.</p>')}
       ${section('Receitas','3 receitas com '+food.name,recipes.data?.length?`<div class="recipe-list">${recipes.data.slice(0,3).map((r,i)=>`<article class="recipe-card">${r.image_url?`<img class="recipe-image" src="${esc(r.image_url)}" alt="${esc(r.name)}" loading="lazy">`:''}<div class="recipe-heading"><span>Receita ${i+1}</span><h3>${esc(r.name)}</h3></div>${r.region?`<p class="recipe-meta">${esc(r.region)} · ${esc(r.difficulty||'')}</p>`:''}<div>${paragraphs(r.description)}</div><details><summary>Ingredientes</summary><div>${paragraphs(r.ingredients)}</div></details><details><summary>Modo de preparo</summary><div>${paragraphs(r.instructions)}</div></details><small>${r.servings?`Rendimento: ${esc(r.servings)} · `:''}${r.prep_time?`Preparo: ${esc(r.prep_time)} · `:''}${r.cook_time?`Cozimento: ${esc(r.cook_time)} · `:''}${r.oven_temperature?`Forno: ${esc(r.oven_temperature)}`:''}</small></article>`).join('')}</div>`:'<p class="muted">As receitas ainda estão sendo preparadas.</p>')}
       ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.sources?.source_type||'Fonte')}</span>${sourceLink(s.sources)}</article>`))}
     </div>`;
