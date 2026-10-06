@@ -29,7 +29,7 @@ function foodCard(food, index=0) {
 async function loadCategories() {
   categoryList.innerHTML = '<p class="loading">Carregando categorias...</p>';
   const [{ data: categories, error: ce }, { data: relations, error: re }] = await Promise.all([
-    db.from('categories').select('id,name,slug').order('name'),
+    db.from('categories').select('id,name,slug,created_at').order('created_at',{ascending:false}),
     db.from('food_categories').select('category_id,food_id')
   ]);
   if (ce || re) { categoryList.innerHTML = '<p class="loading">Não foi possível carregar as categorias agora.</p>'; return; }
