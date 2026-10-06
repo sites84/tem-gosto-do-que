@@ -4,35 +4,37 @@ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const page=document.querySelector('#food-page');
 const slug=new URLSearchParams(location.search).get('slug');
 const esc=v=>String(v??'').replace(/[&<>\'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-const cleanText=v=>String(v??'').replace(/\\n/g,'\n').replace(/\r/g,'');
+const cleanText=v=>String(v??'').replace(/\\+n/g,'\n').replace(/\r/g,'');
 const paragraphs=text=>cleanText(text).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
 const lines=text=>cleanText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
 const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
 const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'<p class="muted">Ainda não há informação publicada nesta seção.</p>';
 
-function splitEntries(text){ return lines(text); }
 function parseMyths(content){
   return cleanText(content).split(/\n\s*\n/).map(block=>{
-    const ls=block.split(/\n+/).map(x=>x.trim()).filter(Boolean);
-    const q=(ls.find(x=>/^MITO:/i.test(x))||'').replace(/^MITO:\s*/i,'').trim();
-    const a=(ls.find(x=>/^VERDADE:/i.test(x))||'').replace(/^VERDADE:\s*/i,'').trim();
-    return {q,a};
+    const q=(block.match(/^MITO:\s*([^\n]+?)(?=\n|$)/i)||[])[1]||'';
+    const a=(block.match(/VERDADE:\s*([\s\S]*)$/i)||[])[1]||'';
+    return {q:q.trim(),a:a.trim()};
   }).filter(x=>x.q&&x.a);
 }
 function parseFaq(content){
-  return cleanText(content).split(/\n\s*\n/).map(block=>{
-    const m=block.match(/^(.+?\?)\s*(?:—|-|:)\s*([\s\S]*)$/);
-    return m?{q:m[1].trim(),a:m[2].trim()}:{q:block,a:'Resposta ainda não publicada.'};
-  }).filter(x=>x.q);
+  const text=cleanText(content).trim();
+  const matches=[...text.matchAll(/(?:^|\n)\s*(.+?\?)\s*[—–-]\s*([\s\S]*?)(?=\n\s*.+?\?\s*[—–-]|$)/g)];
+  if(matches.length) return matches.map(m=>({q:m[1].trim(),a:m[2].trim()})).filter(x=>x.q&&x.a);
+  return lines(text).map(line=>{const i=line.indexOf('—');return i>0?{q:line.slice(0,i).trim(),a:line.slice(i+1).trim()}:null;}).filter(Boolean);
 }
 function parseCuriosities(content){
-  const normalized=cleanText(content).replace(/\r/g,'').trim();
-  const matches=[...normalized.matchAll(/(?:^|\n)\s*(\d+)\.\s+([\s\S]*?)(?=(?:\n\s*\d+\.\s+)|$)/g)];
-  return matches.map(m=>({n:m[1],text:m[2].trim()}));
+  return lines(content).map(line=>{
+    const m=line.match(/^(\d+)\.\s*(.*)$/);
+    if(!m)return null;
+    const n=m[1], rest=m[2].trim();
+    const parts=rest.split(/\s+[—–-]\s+/,2);
+    return {n,title:parts[0].trim(),text:(parts[1]||parts[0]).trim()};
+  }).filter(Boolean);
 }
 function editorialBody(type,content){
   if(type==='varieties'){
-    const rows=splitEntries(content).map(line=>{const p=line.split(/\s[—–-]\s/);return [p[0].replace(/:$/,''),p.slice(1).join(' — ')||line.replace(/^.*?:\s*/,'')];});
+    const rows=lines(content).map(line=>{const p=line.split(/\s[—–-]\s/);return [p[0].replace(/:$/,''),p.slice(1).join(' — ')||line.replace(/^.*?:\s*/,'')];});
     return `<div class="variety-table"><div class="variety-head"><span>Variedade / corte</span><span>Perfil e uso</span></div>${rows.map(r=>`<div class="variety-row"><strong>${esc(r[0])}</strong><span>${esc(r[1])}</span></div>`).join('')}</div>`;
   }
   if(type==='myths'||type==='faq'){
@@ -78,7 +80,7 @@ async function load(){
       ${extra.map(x=>section(x.section_type.replaceAll('_',' '),x.title,editorialBody(x.section_type,x.content))).join('')}
       ${myths?section('Mitos e verdades','Mitos e verdades',editorialBody('myths',myths.content)):''}
       ${faq?section('Perguntas frequentes','Perguntas frequentes',editorialBody('faq',faq.content)):''}
-      ${section('Curiosidades','10 curiosidades',curios.length?`<div class="curiosity-list">${curios.map(c=>`<details class="curiosity-item"><summary><span>${String(c.n).padStart(2,'0')}</span>${esc(c.text.split(/\.\s/)[0].replace(/^\d+\.\s*/,''))}</summary><div class="curiosity-answer">${paragraphs(c.text.replace(/^\d+\.\s*/,''))}</div></details>`).join('')}</div>`:'<p class="muted">As curiosidades ainda estão sendo reunidas.</p>')}
+      ${section('Curiosidades','10 curiosidades',curios.length?`<div class="curiosity-list">${curios.map(c=>`<details class="curiosity-item"><summary><span>${String(c.n).padStart(2,'0')}</span><strong>${esc(c.title)}</strong></summary><div class="curiosity-answer">${paragraphs(c.text)}</div></details>`).join('')}</div>`:'<p class="muted">As curiosidades ainda estão sendo reunidas.</p>')}
       ${section('Receitas','3 receitas com '+food.name,recipes.data?.length?`<div class="recipe-list">${recipes.data.slice(0,3).map((r,i)=>`<article class="recipe-card">${r.image_url?`<img class="recipe-image" src="${esc(r.image_url)}" alt="${esc(r.name)}" loading="lazy">`:''}<div class="recipe-heading"><span>Receita ${i+1}</span><h3>${esc(r.name)}</h3></div>${r.region?`<p class="recipe-meta">${esc(r.region)} · ${esc(r.difficulty||'')}</p>`:''}<div>${paragraphs(r.description)}</div><details><summary>Ingredientes</summary><div>${paragraphs(r.ingredients)}</div></details><details><summary>Modo de preparo</summary><div>${paragraphs(r.instructions)}</div></details><small>${r.servings?`Rendimento: ${esc(r.servings)} · `:''}${r.prep_time?`Preparo: ${esc(r.prep_time)} · `:''}${r.cook_time?`Cozimento: ${esc(r.cook_time)} · `:''}${r.oven_temperature?`Forno: ${esc(r.oven_temperature)}`:''}</small></article>`).join('')}</div>`:'<p class="muted">As receitas ainda estão sendo preparadas.</p>')}
       ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.sources?.source_type||'Fonte')}</span>${sourceLink(s.sources)}</article>`))}
     </div>`;
