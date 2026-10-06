@@ -3,53 +3,95 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="Tem Gosto do Q? Descubra o sabor, a história, o preparo e as curiosidades dos alimentos do mundo.">
-  <title>Tem Gosto do Q?</title>
+  <meta name="description" content="Tem Gosto do Q? Descubra do que alimentos conhecidos, raros e inesperados têm gosto — e conheça sua história, preparo e curiosidades.">
+  <meta name="theme-color" content="#f7f4ed">
+  <title>Tem Gosto do Q? — Sabor, história e curiosidade</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="./">Tem Gosto do Q?</a>
+    <a class="brand" href="./" aria-label="Tem Gosto do Q? — página inicial">Tem Gosto do Q?</a>
     <nav aria-label="Navegação principal">
+      <a href="#explorar">Explorar</a>
       <a href="#categorias">Categorias</a>
       <a href="#como-funciona">Como funciona</a>
     </nav>
   </header>
 
   <main>
-    <section class="hero">
-      <p class="eyebrow">Sabor, história e curiosidade</p>
-      <h1>Tem gosto do quê?</h1>
-      <p class="hero-copy">Descubra como alimentos conhecidos, raros e inesperados são descritos por quem já provou — e conheça a história que existe por trás deles.</p>
-      <form id="search-form" class="search" role="search">
-        <label class="sr-only" for="search-input">Pesquisar alimento</label>
-        <input id="search-input" type="search" placeholder="Digite um alimento..." autocomplete="off">
-        <button type="submit">Pesquisar</button>
-      </form>
+    <section class="home-hero">
+      <div class="home-hero-copy">
+        <p class="eyebrow">SABOR, HISTÓRIA E CURIOSIDADE</p>
+        <h1>Tem gosto do quê?</h1>
+        <p class="hero-copy">A gente prova por você — pelo menos na pesquisa. Descubra como alimentos conhecidos, raros e inesperados são descritos por quem já comeu e conheça tudo o que existe por trás deles.</p>
+        <form id="search-form" class="search" role="search">
+          <label class="sr-only" for="search-input">Pesquisar alimento</label>
+          <input id="search-input" type="search" placeholder="Digite um alimento..." autocomplete="off">
+          <button type="submit">Pesquisar</button>
+        </form>
+        <div class="hero-hints" aria-label="Sugestões de pesquisa">
+          <span>Experimente:</span>
+          <button type="button" data-search="azeitona">Azeitona</button>
+          <button type="button" data-search="carne de porco">Carne de porco</button>
+          <button type="button" data-search="escorpião">Escorpião</button>
+        </div>
+      </div>
+      <div class="hero-note" aria-hidden="true">
+        <span>01</span><strong>Descobrir</strong><small>o sabor</small>
+        <i></i>
+        <span>02</span><strong>Entender</strong><small>a história</small>
+      </div>
     </section>
 
-    <section id="resultado" class="section hidden" aria-live="polite">
-      <div class="section-heading"><h2>Resultados</h2><button id="clear-search" class="text-button" type="button">Limpar</button></div>
+    <section id="resultado" class="section search-results hidden" aria-live="polite">
+      <div class="section-heading">
+        <div><p class="eyebrow">PESQUISA</p><h2>Encontramos</h2></div>
+        <button id="clear-search" class="text-button" type="button">Limpar</button>
+      </div>
       <div id="results-grid" class="food-grid"></div>
     </section>
 
-    <section id="categorias" class="section">
-      <div class="section-heading"><div><p class="eyebrow">Explore</p><h2>Categorias</h2></div></div>
+    <section id="explorar" class="section featured-section">
+      <div class="section-heading">
+        <div><p class="eyebrow">JÁ NO SITE</p><h2>Escolha um alimento.</h2></div>
+        <span class="section-count" id="food-count"></span>
+      </div>
+      <div id="featured-grid" class="food-grid featured-grid">
+        <p class="loading">Carregando investigações...</p>
+      </div>
+    </section>
+
+    <section id="categorias" class="section categories-section">
+      <div class="section-heading">
+        <div><p class="eyebrow">EXPLORE</p><h2>Por categoria</h2></div>
+      </div>
       <div id="category-list" class="category-grid">
         <p class="loading">Carregando categorias...</p>
       </div>
     </section>
 
-    <section id="como-funciona" class="section intro">
-      <p class="eyebrow">A proposta</p>
-      <h2>Não é só sobre sabor.</h2>
-      <p>Cada alimento será investigado desde sua origem e história até a forma como é produzido, preparado e consumido. Os relatos pessoais serão separados das informações documentadas para deixar claro o que é fato e o que é experiência.</p>
+    <section id="como-funciona" class="section how-section">
+      <div class="how-intro">
+        <p class="eyebrow">COMO FUNCIONA</p>
+        <h2>Uma pergunta simples pode esconder uma história enorme.</h2>
+      </div>
+      <div class="how-grid">
+        <article><span>01</span><h3>O gosto</h3><p>Reunimos descrições de quem já provou e transformamos experiências diferentes em uma explicação clara sobre sabor, aroma e textura.</p></article>
+        <article><span>02</span><h3>A história</h3><p>Seguimos uma linha do tempo, com datas exatas ou aproximadas, para entender de onde veio o alimento e como ele chegou à mesa.</p></article>
+        <article><span>03</span><h3>Tudo ao redor</h3><p>Produção, preparo, cultura, curiosidades, combinações, segurança, perguntas frequentes e receitas completam a investigação.</p></article>
+      </div>
+    </section>
+
+    <section class="section manifesto-section">
+      <p class="eyebrow">A PROPOSTA</p>
+      <h2>Do alimento mais comum ao prato que você nunca teria coragem de pedir.</h2>
+      <p>O Tem Gosto do Q? existe para responder uma curiosidade que quase todo mundo já teve: <strong>“Mas isso tem gosto de quê?”</strong></p>
     </section>
   </main>
 
   <footer class="site-footer">
     <span>Tem Gosto do Q?</span>
-    <span>Projeto em construção.</span>
+    <span>Conteúdo em constante expansão.</span>
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
