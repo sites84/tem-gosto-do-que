@@ -6,86 +6,16 @@
   <meta name="description" content="Tem Gosto do Q? — investigação completa de um alimento.">
   <title>Alimento | Tem Gosto do Q?</title>
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="food-fixes.css">
 </head>
 <body>
   <header class="site-header">
     <a class="brand" href="./">Tem Gosto do Q?</a>
     <nav aria-label="Navegação principal"><a href="./#categorias">Categorias</a><a href="./#como-funciona">Como funciona</a></nav>
   </header>
-
   <main class="food-page" id="food-page"><p class="loading">Carregando investigação...</p></main>
-
   <footer class="site-footer"><span>Tem Gosto do Q?</span><span>Pesquisa, sabor e história.</span></footer>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL='https://saipuhuzotusqfihvjgw.supabase.co';
-    const SUPABASE_KEY='sb_publishable_1LQ6Iy5AO8TB4JwtsdMokw_aWgFHHFc';
-    const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-    const page=document.querySelector('#food-page');
-    const slug=new URLSearchParams(location.search).get('slug');
-    const esc=v=>String(v??'').replace(/[&<>\'\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-    const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
-    const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'<p class="muted">Ainda não há informação publicada nesta seção.</p>';
-    const paragraphs=text=>String(text||'').split(/\n\s*\n/).map(x=>`<p>${esc(x)}</p>`).join('');
-
-    function editorialBody(type,title,content){
-      if(type==='varieties'){
-        const rows=String(content||'').split('\n').map(line=>line.split(' — ')).filter(x=>x.length>=2);
-        return `<div class="variety-table"><div class="variety-head"><span>Variedade</span><span>Perfil e uso</span></div>${rows.map(r=>`<div class="variety-row"><strong>${esc(r[0])}</strong><span>${esc(r.slice(1).join(' — '))}</span></div>`).join('')}</div>`;
-      }
-      if(type==='myths'||type==='faq'){
-        const rows=String(content||'').split(/\n\s*\n/).filter(Boolean);
-        return `<div class="editorial-list">${rows.map((r,i)=>{const parts=r.split(' — ');return `<details class="editorial-toggle" ${i===0?'open':''}><summary>${esc(parts[0])}</summary><p>${esc(parts.slice(1).join(' — ')||r)}</p></details>`}).join('')}</div>`;
-      }
-      return `<article class="editorial-card"><p>${paragraphs(content)}</p></article>`;
-    }
-
-    async function load(){
-      if(!slug){page.innerHTML='<div class="section"><h1>Alimento não encontrado</h1><p>O endereço não contém um alimento.</p></div>';return;}
-      const foodResult=await db.from('foods').select('*').eq('slug',slug).eq('status','published').maybeSingle();
-      if(foodResult.error||!foodResult.data){page.innerHTML='<div class="section"><h1>Alimento não encontrado</h1><p>Esse alimento ainda não está publicado.</p></div>';return;}
-      const food=foodResult.data;
-      const [cats,history,steps,preps,editorial,recipes,sources]=await Promise.all([
-        db.from('food_categories').select('categories(name,slug)').eq('food_id',food.id),
-        db.from('history_sections').select('title,period_label,content').eq('food_id',food.id).eq('status','published').order('display_order'),
-        db.from('processing_steps').select('step_order,title,description,technique,duration,temperature').eq('food_id',food.id).eq('status','published').order('step_order'),
-        db.from('preparations').select('name,description,region,technique,cultural_context').eq('food_id',food.id).eq('status','published'),
-        db.from('editorial_sections').select('title,content,section_type,display_order').eq('food_id',food.id).eq('status','published').order('display_order'),
-        db.from('recipes').select('*').eq('food_id',food.id).eq('status','published').order('display_order'),
-        db.from('food_sources').select('sources(title,url,source_type)').eq('food_id',food.id)
-      ]);
-      if(history.error||editorial.error||recipes.error){console.error(history.error||editorial.error||recipes.error);}
-      document.title=`${food.name} | Tem Gosto do Q?`;
-      const categoryNames=(cats.data||[]).map(x=>x.categories?.name).filter(Boolean);
-      const profile=[['Intensidade',food.taste_intensity],['Doçura',food.sweetness],['Acidez',food.acidity],['Amargor',food.bitterness],['Salinidade',food.salinity],['Umami',food.umami],['Gordura percebida',food.perceived_fat],['Aroma',food.aroma_intensity],['Firmeza',food.texture_firmness]];
-      const bars=profile.map(([name,value])=>`<div class="taste-meter"><div><span>${name}</span><strong>${value}/5</strong></div><div class="meter"><i style="width:${value*20}%"></i></div></div>`).join('');
-      const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||'Fonte')}</a>`:'';
-      const extra=(editorial.data||[]).filter(x=>x.section_type!=='curiosity');
-
-      page.innerHTML=`
-        <section class="food-hero">
-          <div class="food-hero-inner">
-            <p class="eyebrow">${esc(categoryNames.join(' · ')||'Investigação gastronômica')}</p>
-            <h1>${esc(food.name)}</h1>
-            ${food.scientific_name?`<p class="scientific">${esc(food.scientific_name)}</p>`:''}
-            <div class="answer-card"><span>Tem gosto de quê?</span><strong>${esc(food.short_taste_answer)}</strong><p>${esc(food.editorial_taste_description)}</p></div>
-          </div>
-        </section>
-        <div class="section food-content">
-          ${section('O que é?','O que é a '+food.name+'?',`<div class="overview-copy"><p>${esc(food.what_is||food.summary)}</p></div><div class="fact-grid"><article class="fact-card"><span>Origem</span><strong>${esc(food.origin_summary||'Informação em pesquisa.')}</strong></article><article class="fact-card"><span>Tempo até a colheita ou preparo</span><strong>${esc(food.time_to_harvest_or_ready||'Varia conforme o alimento.')}</strong></article><article class="fact-card"><span>Primeiro uso conhecido</span><strong>${esc(food.first_known_use||'Informação em pesquisa.')}</strong></article><article class="fact-card"><span>Quando é colhido</span><strong>${esc(food.harvest_window||'Varia conforme espécie, região e finalidade.')}</strong></article></div>`)}
-          ${section('Perfil de sabor','Como é o sabor?',`<div class="taste-grid">${bars}</div><div class="two-columns"><div><h3>Textura</h3><p>${esc(food.texture)}</p></div><div><h3>Aroma</h3><p>${esc(food.aroma)}</p></div></div>`)}
-          ${section('Relatos reunidos','O que as pessoas dizem?',`<article class="report-narrative">${paragraphs(food.taste_narrative||'Os relatos ainda estão sendo reunidos e comparados.')}</article>`)}
-          ${section('Linha do tempo','A história da '+food.name,list(history.data||[],h=>`<article class="timeline-item"><span>${esc(h.period_label)}</span><div><h3>${esc(h.title)}</h3><p>${esc(h.content)}</p></div></article>`))}
-          ${section('Da origem ao prato','Como '+food.name+' chega à mesa',list(steps.data||[],s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3><p>${esc(s.description)}</p>${s.technique?`<small>${esc(s.technique)}</small>`:''}${s.duration||s.temperature?`<div class="process-meta">${s.duration?`<span>${esc(s.duration)}</span>`:''}${s.temperature?`<span>${esc(s.temperature)}</span>`:''}</div>`:''}</div></article>`))}
-          ${section('Formas de preparo','Como pode ser preparado',list(preps.data||[],p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}<p>${esc(p.description)}</p><small>${esc(p.technique)}</small></article>`))}
-          ${section('Mais para descobrir','Além do sabor',extra.map(x=>`<article class="editorial-feature"><p class="feature-type">${esc(x.section_type.replaceAll('_',' '))}</p><h3>${esc(x.title)}</h3>${editorialBody(x.section_type,x.title,x.content)}</article>`).join(''))}
-          ${section('Curiosidades','10 coisas que você talvez não saiba',editorial.data?.filter(x=>x.section_type==='curiosity').length?`<div class="curiosity-list">${editorial.data.filter(x=>x.section_type==='curiosity').map((c,i)=>`<details class="curiosity-item" ${i===0?'open':''}><summary><span>${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</summary><p>${esc(c.content)}</p></details>`).join('')}</div>`:'<p class="muted">As curiosidades ainda estão sendo reunidas.</p>')}
-          ${section('Receitas','3 receitas com '+food.name,recipes.data?.length?`<div class="recipe-list">${recipes.data.slice(0,3).map((r,i)=>`<article class="recipe-card">${r.image_url?`<img class="recipe-image" src="${esc(r.image_url)}" alt="${esc(r.name)}" loading="lazy">`:''}<div class="recipe-heading"><span>Receita ${i+1}</span><h3>${esc(r.name)}</h3></div>${r.region?`<p class="recipe-meta">${esc(r.region)} · ${esc(r.difficulty||'')}</p>`:''}<p>${esc(r.description)}</p><details><summary>Ingredientes</summary><p>${esc(r.ingredients)}</p></details><details><summary>Modo de preparo</summary><p>${esc(r.instructions)}</p></details><small>${r.servings?`Rendimento: ${esc(r.servings)} · `:''}${r.prep_time?`Preparo: ${esc(r.prep_time)} · `:''}${r.cook_time?`Cozimento: ${esc(r.cook_time)} · `:''}${r.oven_temperature?`Forno: ${esc(r.oven_temperature)}`:''}</small></article>`).join('')}</div>`:'<p class="muted">As receitas ainda estão sendo preparadas.</p>')}
-          ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.sources?.source_type||'Fonte')}</span>${sourceLink(s.sources)}</article>`))}
-        </div>`;
-    }
-    load();
-  </script>
+  <script src="food-app.js"></script>
 </body>
 </html>
