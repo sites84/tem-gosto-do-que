@@ -3,8 +3,6 @@ const SUPABASE_KEY = 'sb_publishable_1LQ6Iy5AO8TB4JwtsdMokw_aWgFHHFc';
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const categoryList = document.querySelector('#category-list');
-const featuredGrid = document.querySelector('#featured-grid');
-const foodCount = document.querySelector('#food-count');
 const searchForm = document.querySelector('#search-form');
 const searchInput = document.querySelector('#search-input');
 const resultSection = document.querySelector('#resultado');
@@ -28,45 +26,22 @@ function foodCard(food, index=0) {
   </a>`;
 }
 
-async function loadFoods() {
-  featuredGrid.innerHTML = '<p class="loading">Carregando investigações...</p>';
-  const { data, error } = await db.from('foods')
-    .select('id,name,slug,summary,short_taste_answer,main_image_url,status,updated_at')
-    .eq('status','published')
-    .order('updated_at', { ascending: false });
-
-  if (error) {
-    featuredGrid.innerHTML = '<p class="loading">Não foi possível carregar os alimentos agora.</p>';
-    console.error(error);
-    return;
-  }
-
-  foodCount.textContent = `${data.length} investigação${data.length === 1 ? '' : 'ões'}`;
-  featuredGrid.innerHTML = data.length
-    ? data.map((food, index) => foodCard(food, index)).join('')
-    : '<p class="loading">As primeiras investigações estão sendo preparadas.</p>';
-}
-
 async function loadCategories() {
-  const { data: categories, error } = await db.from('categories').select('id,name,slug').order('name');
-  if (error) {
-    categoryList.innerHTML = '<p class="loading">Não foi possível carregar as categorias agora.</p>';
-    console.error(error);
-    return;
-  }
-
-  const { data: relations } = await db.from('food_categories').select('category_id,food_id');
-  const counts = {};
-  (relations || []).forEach(row => { counts[row.category_id] = (counts[row.category_id] || 0) + 1; });
-
-  categoryList.innerHTML = categories.map(category => `<button class="category-card" type="button" data-category="${escapeHtml(category.slug)}" data-category-id="${category.id}">
-    <strong>${escapeHtml(category.name)}</strong>
-    <span>${counts[category.id] || 0} ${counts[category.id] === 1 ? 'investigação' : 'investigações'}</span>
-  </button>`).join('');
-
-  categoryList.querySelectorAll('[data-category-id]').forEach(button => {
-    button.addEventListener('click', () => filterByCategory(button.dataset.categoryId, button.textContent.trim().split('\n')[0]));
-  });
+  categoryList.innerHTML = '<p class="loading">Carregando categorias...</p>';
+  const [{ data: categories, error: ce }, { data: relations, error: re }] = await Promise.all([
+    db.from('categories').select('id,name,slug').order('name'),
+    db.from('food_categories').select('category_id,food_id')
+  ]);
+  if (ce || re) { categoryList.innerHTML = '<p class="loading">Não foi possível carregar as categorias agora.</p>'; return; }
+  const { data: foods, error: fe } = await db.from('foods').select('id,name,slug,summary,short_taste_answer,status,updated_at').eq('status','published').order('updated_at',{ascending:false});
+  if (fe) { categoryList.innerHTML = '<p class="loading">Não foi possível carregar os posts agora.</p>'; return; }
+  const byId = Object.fromEntries((foods||[]).map(f=>[f.id,f]));
+  const byCat = {};
+  (relations||[]).forEach(r=>{ if(!byCat[r.category_id]) byCat[r.category_id]=[]; if(byId[r.food_id]) byCat[r.category_id].push(byId[r.food_id]); });
+  categoryList.innerHTML = categories.map(c => {
+    const items = byCat[c.id] || [];
+    return '<section class="category-showcase"><div class="category-showcase-heading"><div><p class="eyebrow">CATEGORIA</p><h3>'+escapeHtml(c.name)+'</h3></div><span>'+items.length+' '+(items.length===1?'investigação':'investigações')+'</span></div><div class="category-carousel">'+(items.length ? items.map(foodCard).join('') : '<p class="loading">Ainda não há investigações nesta categoria.</p>')+'</div></section>';
+  }).join('');
 }
 
 async function filterByCategory(categoryId, categoryName) {
@@ -136,5 +111,4 @@ clearSearch.addEventListener('click', () => {
   searchInput.focus();
 });
 
-loadFoods();
 loadCategories();
