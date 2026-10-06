@@ -33,12 +33,13 @@
       const foodResult=await db.from('foods').select('*').eq('slug',slug).eq('status','published').maybeSingle();
       if(foodResult.error||!foodResult.data){page.innerHTML='<div class="section"><h1>Alimento não encontrado</h1><p>Esse alimento ainda não está publicado.</p></div>';return;}
       const food=foodResult.data;
-      const [cats,history,steps,preps,curiosities,sources]=await Promise.all([
+      const [cats,history,steps,preps,curiosities,recipes,sources]=await Promise.all([
         db.from('food_categories').select('categories(name,slug)').eq('food_id',food.id),
         db.from('history_sections').select('title,period_label,content').eq('food_id',food.id).eq('status','published').order('display_order'),
         db.from('processing_steps').select('step_order,title,description,technique').eq('food_id',food.id).eq('status','published').order('step_order'),
         db.from('preparations').select('name,description,region,technique').eq('food_id',food.id).eq('status','published'),
         db.from('editorial_sections').select('title,content').eq('food_id',food.id).eq('status','published').eq('section_type','curiosity').order('display_order'),
+        db.from('recipes').select('name,description,ingredients,instructions,region,prep_time,cook_time,difficulty').eq('food_id',food.id).eq('status','published').order('display_order'),
         db.from('food_sources').select('sources(title,url,source_type)').eq('food_id',food.id)
       ]);
       document.title=`${food.name} | Tem Gosto do Q?`;
@@ -64,6 +65,7 @@
           ${section('Da origem ao prato','Como '+food.name+' chega à mesa',list(steps.data||[],s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3><p>${esc(s.description)}</p>${s.technique?`<small>${esc(s.technique)}</small>`:''}</div></article>`))}
           ${section('Formas de preparo','Como pode ser preparado',list(preps.data||[],p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}<p>${esc(p.description)}</p><small>${esc(p.technique)}</small></article>`))}
           ${section('Curiosidades','Você sabia?',curiosities.data?.length?`<div class="curiosity-list">${curiosities.data.map((c,i)=>`<details class="curiosity-item" ${i===0?'open':''}><summary><span>${String(i+1).padStart(2,'0')}</span>${esc(c.title)}</summary><p>${esc(c.content)}</p></details>`).join('')}</div>`:'<p class="muted">As curiosidades ainda estão sendo reunidas.</p>')}
+          ${section('Receitas','3 receitas com '+food.name,recipes.data?.length?`<div class="recipe-list">${recipes.data.slice(0,3).map((r,i)=>`<article class="recipe-card"><div class="recipe-heading"><span>Receita ${i+1}</span><h3>${esc(r.name)}</h3></div>${r.region?`<p class="recipe-meta">${esc(r.region)} · ${esc(r.difficulty||'')}</p>`:''}<p>${esc(r.description)}</p><details><summary>Ingredientes</summary><p>${esc(r.ingredients)}</p></details><details><summary>Modo de preparo</summary><p>${esc(r.instructions)}</p></details>${r.prep_time||r.cook_time?`<small>Preparo: ${esc(r.prep_time||'—')} · Cozimento: ${esc(r.cook_time||'—')}</small>`:''}</article>`).join('')}</div>`:'<p class="muted">As receitas ainda estão sendo preparadas.</p>')}
           ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.source_type)}</span>${sourceLink(s.sources)}</article>`))}
         </div>`;
     }
