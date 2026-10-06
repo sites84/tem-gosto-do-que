@@ -8,20 +8,26 @@ const cleanText=v=>String(v??'').replace(/\\+n/g,'\n').replace(/\r/g,'');
 const paragraphs=text=>cleanText(text).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
 const lines=text=>cleanText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
 const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
-const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'<p class="muted">Ainda não há informação publicada nesta seção.</p>';
+const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'';
 
 function parseMyths(content){
   return cleanText(content).split(/\n\s*\n/).map(block=>{
-    const q=(block.match(/^MITO:\s*([^\n]+?)(?=\n|$)/i)||[])[1]||'';
-    const a=(block.match(/VERDADE:\s*([\s\S]*)$/i)||[])[1]||'';
+    const q=(block.match(/^MITO\s*[:—-]\s*([^\n]+)$/im)||[])[1]||'';
+    const a=(block.match(/^VERDADE\s*[:—-]\s*([\s\S]*)$/im)||[])[1]||'';
     return {q:q.trim(),a:a.trim()};
   }).filter(x=>x.q&&x.a);
 }
 function parseFaq(content){
+  const blocks=cleanText(content).split(/\n\s*\n/).filter(Boolean);
+  const explicit=blocks.map(block=>{
+    const q=(block.match(/^PERGUNTA\s*[:—-]\s*([^\n]+)$/im)||[])[1]||'';
+    const a=(block.match(/^RESPOSTA\s*[:—-]\s*([\s\S]*)$/im)||[])[1]||'';
+    return q&&a?{q:q.trim(),a:a.trim()}:null;
+  }).filter(Boolean);
+  if(explicit.length) return explicit;
   const text=cleanText(content).trim();
-  const matches=[...text.matchAll(/(?:^|\n)\s*(.+?\?)\s*[—–-]\s*([\s\S]*?)(?=\n\s*.+?\?\s*[—–-]|$)/g)];
-  if(matches.length) return matches.map(m=>({q:m[1].trim(),a:m[2].trim()})).filter(x=>x.q&&x.a);
-  return lines(text).map(line=>{const i=line.indexOf('—');return i>0?{q:line.slice(0,i).trim(),a:line.slice(i+1).trim()}:null;}).filter(Boolean);
+  const matches=[...text.matchAll(/(?:^|\n)\s*(.+?\?)\s*(?:—|:)\s*([\s\S]*?)(?=\n\s*.+?\?\s*(?:—|:)|$)/g)];
+  return matches.map(m=>({q:m[1].trim(),a:m[2].trim()})).filter(x=>x.q&&x.a);
 }
 function parseCuriosities(content){
   return lines(content).map(line=>{
@@ -29,16 +35,18 @@ function parseCuriosities(content){
     if(!m)return null;
     const n=m[1], rest=m[2].trim();
     const parts=rest.split(/\s+[—–-]\s+/,2);
-    return {n,title:parts[0].trim(),text:(parts[1]||parts[0]).trim()};
-  }).filter(Boolean);
+    return {n,title:(parts[0]||'').trim(),text:(parts[1]||'').trim()};
+  }).filter(x=>x&&x.title&&x.text);
 }
 function editorialBody(type,content){
   if(type==='varieties'){
     const rows=lines(content).map(line=>{const p=line.split(/\s[—–-]\s/);return [p[0].replace(/:$/,''),p.slice(1).join(' — ')||line.replace(/^.*?:\s*/,'')];});
-    return `<div class="variety-table"><div class="variety-head"><span>Variedade / corte</span><span>Perfil e uso</span></div>${rows.map(r=>`<div class="variety-row"><strong>${esc(r[0])}</strong><span>${esc(r[1])}</span></div>`).join('')}</div>`;
+    if(!rows.length)return '';
+    return `<div class="variety-table"><div class="variety-head"><span>Variedade / tipo</span><span>Perfil e uso</span></div>${rows.map(r=>`<div class="variety-row"><strong>${esc(r[0])}</strong><span>${esc(r[1])}</span></div>`).join('')}</div>`;
   }
   if(type==='myths'||type==='faq'){
     const rows=type==='myths'?parseMyths(content):parseFaq(content);
+    if(!rows.length)return '<p class="muted">Esta seção ainda está sendo preparada.</p>';
     return `<div class="editorial-list">${rows.map(r=>`<details class="editorial-toggle"><summary>${esc(r.q)}</summary><div class="toggle-answer">${paragraphs(r.a)}</div></details>`).join('')}</div>`;
   }
   return `<div class="editorial-card">${paragraphs(content)}</div>`;
@@ -68,15 +76,18 @@ async function load(){
   const faq=(editorial.data||[]).find(x=>x.section_type==='faq');
   const curiositySection=(editorial.data||[]).find(x=>x.section_type==='curiosity');
   const curios=curiositySection?parseCuriosities(curiositySection.content):[];
+  const historyBlock=(history.data||[]).length?section('Linha do tempo','A história de '+food.name,list(history.data||[],h=>`<article class="timeline-item"><span>${esc(h.period_label)}</span><div><h3>${esc(h.title)}</h3>${paragraphs(h.content)}</div></article>`)):'';
+  const stepsBlock=(steps.data||[]).length?section('Da origem ao prato','Como chega à mesa',`<div class="stack">${steps.data.map(s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3>${paragraphs(s.description)}${s.technique?`<small>${esc(s.technique)}</small>`:''}${s.duration||s.temperature?`<div class="process-meta">${s.duration?`<span>${esc(s.duration)}</span>`:''}${s.temperature?`<span>${esc(s.temperature)}</span>`:''}</div>`:''}</div></article>`).join('')}</div>`):'';
+  const prepBlock=(preps.data||[]).length?section('Preparo','Algumas formas de preparo',`<div class="stack">${preps.data.map(p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}${paragraphs(p.description)}${p.technique?`<small>${esc(p.technique)}</small>`:''}</article>`).join('')}</div>`):'';
   page.innerHTML=`
     <section class="food-hero"><div class="food-hero-inner"><p class="eyebrow">${esc(categoryNames.join(' · ')||'Investigação gastronômica')}</p><h1>${esc(food.name)}</h1>${food.scientific_name?`<p class="scientific">${esc(food.scientific_name)}</p>`:''}<div class="answer-card"><span>Tem gosto de quê?</span><strong>${esc(food.short_taste_answer)}</strong><p>${esc(food.editorial_taste_description)}</p></div></div></section>
     <div class="section food-content">
-      ${section('O que é?','O que é a '+food.name+'?',`<div class="overview-copy">${paragraphs(food.what_is||food.summary)}</div><div class="fact-grid"><article class="fact-card"><span>Origem</span><strong>${esc(food.origin_summary||'Informação em pesquisa.')}</strong></article><article class="fact-card"><span>Tempo até a colheita / abate / preparo</span><strong>${esc(food.time_to_harvest_or_ready||'Varia conforme o alimento.')}</strong></article><article class="fact-card"><span>Primeiro uso conhecido</span><strong>${esc(food.first_known_use||'Informação em pesquisa.')}</strong></article><article class="fact-card"><span>Quando é colhido / abatido</span><strong>${esc(food.harvest_window||'Varia conforme espécie, região e finalidade.')}</strong></article></div>`)}
+      ${section('O que é?','O que é?',`<div class="overview-copy">${paragraphs(food.what_is||food.summary)}</div><div class="fact-grid"><article class="fact-card"><span>Origem</span><strong>${esc(food.origin_summary||'Informação em pesquisa.')}</strong></article><article class="fact-card"><span>Tempo até a colheita / abate / preparo</span><strong>${esc(food.time_to_harvest_or_ready||'Varia conforme o alimento.')}</strong></article><article class="fact-card"><span>Primeiro uso conhecido</span><strong>${esc(food.first_known_use||'Informação em pesquisa.')}</strong></article><article class="fact-card"><span>Quando é colhido / abatido</span><strong>${esc(food.harvest_window||'Varia conforme espécie, região e finalidade.')}</strong></article></div>`)}
       ${section('Perfil de sabor','Como é o sabor?',`<div class="taste-grid">${bars}</div><div class="two-columns"><div><h3>Textura</h3>${paragraphs(food.texture)}</div><div><h3>Aroma</h3>${paragraphs(food.aroma)}</div></div>`)}
       ${section('Relatos reunidos','O que as pessoas dizem?',`<article class="report-narrative">${paragraphs(food.taste_narrative||'Os relatos ainda estão sendo reunidos e comparados.')}</article>`)}
-      ${section('Linha do tempo','A história da '+food.name,list(history.data||[],h=>`<article class="timeline-item"><span>${esc(h.period_label)}</span><div><h3>${esc(h.title)}</h3>${paragraphs(h.content)}</div></article>`))}
-      ${section('Da origem ao prato','Como '+food.name+' chega à mesa',list(steps.data||[],s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3>${paragraphs(s.description)}${s.technique?`<small>${esc(s.technique)}</small>`:''}${s.duration||s.temperature?`<div class="process-meta">${s.duration?`<span>${esc(s.duration)}</span>`:''}${s.temperature?`<span>${esc(s.temperature)}</span>`:''}</div>`:''}</div></article>`))}
-      ${section('Preparo','Algumas formas de preparo',list(preps.data||[],p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}${paragraphs(p.description)}<small>${esc(p.technique)}</small></article>`))}
+      ${historyBlock}
+      ${stepsBlock}
+      ${prepBlock}
       ${extra.map(x=>section(x.section_type.replaceAll('_',' '),x.title,editorialBody(x.section_type,x.content))).join('')}
       ${myths?section('Mitos e verdades','Mitos e verdades',editorialBody('myths',myths.content)):''}
       ${faq?section('Perguntas frequentes','Perguntas frequentes',editorialBody('faq',faq.content)):''}
