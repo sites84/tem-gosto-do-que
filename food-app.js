@@ -71,7 +71,7 @@ async function load(){
   const profile=[['Intensidade',food.taste_intensity],['Doçura',food.sweetness],['Acidez',food.acidity],['Amargor',food.bitterness],['Salinidade',food.salinity],['Umami',food.umami],['Gordura percebida',food.perceived_fat],['Aroma',food.aroma_intensity],['Firmeza',food.texture_firmness]];
   const bars=profile.filter(x=>x[1]!=null).map(([name,value])=>`<div class="taste-meter"><div><span>${esc(name)}</span><strong>${esc(value)}/5</strong></div><div class="meter"><i style="width:${Number(value)*20}%"></i></div></div>`).join('');
   const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||'Fonte')}</a>`:'';
-  const extra=(editorial.data||[]).filter(x=>!['curiosity','myths','faq'].includes(x.section_type));
+  const extra=(editorial.data||[]).filter(x=>!['curiosity','myths','faq'].includes(x.section_type) && !['O que é?','O que as pessoas dizem'].includes(x.title.trim()));
   const myths=(editorial.data||[]).find(x=>x.section_type==='myths');
   const faq=(editorial.data||[]).find(x=>x.section_type==='faq');
   const curiositySection=(editorial.data||[]).find(x=>x.section_type==='curiosity');
