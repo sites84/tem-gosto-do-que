@@ -24,17 +24,6 @@
         <p class="eyebrow">SABOR, HISTÓRIA E CURIOSIDADE</p>
         <h1>Tem gosto do quê?</h1>
         <p class="hero-copy">A gente prova por você — pelo menos na pesquisa. Descubra como alimentos conhecidos, raros e inesperados são descritos por quem já comeu e conheça tudo o que existe por trás deles.</p>
-        <form id="search-form" class="search" role="search">
-          <label class="sr-only" for="search-input">Pesquisar alimento</label>
-          <input id="search-input" type="search" placeholder="Digite um alimento..." autocomplete="off">
-          <button type="submit">Pesquisar</button>
-        </form>
-        <div class="hero-hints" aria-label="Sugestões de pesquisa">
-          <span>Experimente:</span>
-          <button type="button" data-search="azeitona">Azeitona</button>
-          <button type="button" data-search="carne de porco">Carne de porco</button>
-          <button type="button" data-search="escorpião">Escorpião</button>
-        </div>
       </div>
       <div class="hero-note" aria-hidden="true">
         <span>01</span><strong>Descobrir</strong><small>o sabor</small>
@@ -68,6 +57,17 @@
       <div id="category-list" class="category-grid">
         <p class="loading">Carregando categorias...</p>
       </div>
+    </section>
+
+    <section id="pesquisar" class="section search-section">
+      <div class="section-heading">
+        <div><p class="eyebrow">PESQUISAR</p><h2>Procure um alimento.</h2></div>
+      </div>
+      <form id="search-form" class="search" role="search">
+        <label class="sr-only" for="search-input">Pesquisar alimento</label>
+        <input id="search-input" type="search" placeholder="Digite um alimento..." autocomplete="off">
+        <button type="submit">Pesquisar</button>
+      </form>
     </section>
 
     <section id="como-funciona" class="section how-section">
