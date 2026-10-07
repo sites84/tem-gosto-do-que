@@ -26,7 +26,7 @@ function parseFaq(content){
   const raw=cleanText(content).trim();
   try{
     const data=JSON.parse(raw);
-    if(Array.isArray(data)) return data.map(x=>({q:String(x.question||x.q||'').trim(),a:String(x.answer||x.a||'').trim()})).filter(x=>x.q&&x.a);
+    if(Array.isArray(data)) return data.map(x=>Array.isArray(x)?({q:String(x[0]||'').trim(),a:String(x[1]||'').trim()}):({q:String(x.question||x.q||'').trim(),a:String(x.answer||x.a||'').trim()})).filter(x=>x.q&&x.a);
   }catch(e){}
   const blocks=cleanText(content).split(/\n\s*\n/).filter(Boolean);
   const explicit=blocks.map(block=>{
