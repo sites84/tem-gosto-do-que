@@ -16,7 +16,11 @@ function escapeHtml(value='') {
 const coverImages = {
   'azeitona': 'images/azeitona%20capa.webp',
   'carne-de-macaco': 'images/carne%20de%20macaco%20capa.webp',
-  'escorpiao': 'images/escorpi%C3%A3o%20capa.webp'
+  'escorpiao': 'images/escorpi%C3%A3o%20capa.webp',
+  'trufas': 'images/trufas%20capa.webp',
+  'carne-de-jacare': 'images/jacar%C3%A9%20capa.webp',
+  'caviar': 'images/caviar%20capa.webp',
+  'carne-de-porco': 'images/porco%20capa.webp'
 };
 
 function foodCard(food, index=0) {
