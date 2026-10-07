@@ -13,9 +13,17 @@ function escapeHtml(value='') {
   return String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
 }
 
+const coverImages = {
+  'azeitona': 'images/azeitona%20capa.webp',
+  'carne-de-macaco': 'images/carne%20de%20macaco%20capa.webp',
+  'escorpiao': 'images/escorpi%C3%A3o%20capa.webp'
+};
+
 function foodCard(food, index=0) {
   const number = String(index + 1).padStart(2, '0');
-  return `<a class="food-card featured-food-card" href="food.html?slug=${encodeURIComponent(food.slug)}">
+  const cover = coverImages[food.slug];
+  return `<a class="food-card featured-food-card${cover ? ' has-cover' : ''}" href="food.html?slug=${encodeURIComponent(food.slug)}">
+    ${cover ? `<img class="food-card-cover" src="${cover}" alt="Capa de ${escapeHtml(food.name)}" loading="lazy">` : ''}
     <span class="food-card-number">${number}</span>
     <div class="food-card-body">
       <p class="food-card-label">Tem gosto de quê?</p>
