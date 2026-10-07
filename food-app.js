@@ -39,6 +39,19 @@ function parseFaq(content){
   const matches=[...text.matchAll(/(?:^|\n)\s*(.+?\?)\s*(?:—|:)\s*([\s\S]*?)(?=\n\s*.+?\?\s*(?:—|:)|$)/g)];
   return matches.map(m=>({q:m[1].trim(),a:m[2].trim()})).filter(x=>x.q&&x.a);
 }
+function parseIngredients(content){
+  const raw=cleanText(content).trim();
+  try{
+    const data=JSON.parse(raw);
+    if(Array.isArray(data)) return data.map(x=>({item:String(x.item||'').trim(),quantity:String(x.quantity||'').trim()})).filter(x=>x.item);
+  }catch(e){}
+  return [];
+}
+function renderIngredients(content){
+  const items=parseIngredients(content);
+  if(items.length) return `<ul class="recipe-ingredients">${items.map(x=>`<li><span>${esc(x.item)}</span><strong>${esc(x.quantity)}</strong></li>`).join('')}</ul>`;
+  return paragraphs(content);
+}
 function parseCuriosities(content){
   const raw=cleanText(content).trim();
   try{
@@ -90,7 +103,7 @@ async function load(){
   const myths=(editorial.data||[]).find(x=>x.section_type==='myths');
   const faq=(editorial.data||[]).find(x=>x.section_type==='faq');
   const curiositySections=(editorial.data||[]).filter(x=>x.section_type==='curiosity');
-  const curios=curiositySections.flatMap(x=>parseCuriosities(x.content));
+  const curios=curiositySections.map((x,i)=>({n:String(i+1),title:String(x.title||'').trim(),text:cleanText(x.content).trim()})).filter(x=>x.title&&x.text);
   const historyBlock=(history.data||[]).length?section('Linha do tempo','A história de '+food.name,list(history.data||[],h=>`<article class="timeline-item"><span>${esc(h.period_label)}</span><div><h3>${esc(h.title)}</h3>${paragraphs(h.content)}</div></article>`)):'';
   const stepsBlock=(steps.data||[]).length?section('Da origem ao prato','Como chega à mesa',`<div class="stack">${steps.data.map(s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3>${paragraphs(s.description)}${s.technique?`<small>${esc(s.technique)}</small>`:''}${s.duration||s.temperature?`<div class="process-meta">${s.duration?`<span>${esc(s.duration)}</span>`:''}${s.temperature?`<span>${esc(s.temperature)}</span>`:''}</div>`:''}</div></article>`).join('')}</div>`):'';
   const prepBlock=(preps.data||[]).length?section('Preparo','Algumas formas de preparo',`<div class="stack">${preps.data.map(p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}${paragraphs(p.description)}${p.technique?`<small>${esc(p.technique)}</small>`:''}</article>`).join('')}</div>`):'';
@@ -107,7 +120,7 @@ async function load(){
       ${myths?section('Mitos e verdades','Mitos e verdades',editorialBody('myths',myths.content)):''}
       ${faq?section('Perguntas frequentes','Perguntas frequentes',editorialBody('faq',faq.content)):''}
       ${section('Curiosidades',curios.length?`${curios.length} curiosidades`:'Curiosidades',curios.length?`<div class="curiosity-list">${curios.map(c=>`<details class="curiosity-item"><summary><span>${String(c.n).padStart(2,'0')}</span><strong>${esc(c.title)}</strong></summary><div class="curiosity-answer">${paragraphs(c.text)}</div></details>`).join('')}</div>`:'<p class="muted">As curiosidades ainda estão sendo reunidas.</p>')}
-      ${section('Receitas','Receitas',recipes.data?.length?`<div class="recipe-list">${recipes.data.slice(0,3).map((r,i)=>`<article class="recipe-card">${r.image_url?`<img class="recipe-image" src="${esc(r.image_url)}" alt="${esc(r.name)}" loading="lazy">`:''}<div class="recipe-heading"><span>Receita ${i+1}</span><h3>${esc(r.name)}</h3></div>${r.region?`<p class="recipe-meta">${esc(r.region)} · ${esc(r.difficulty||'')}</p>`:''}<div>${paragraphs(r.description)}</div><details><summary>Ingredientes</summary><div>${paragraphs(r.ingredients)}</div></details><details><summary>Modo de preparo</summary><div>${paragraphs(r.instructions)}</div></details><small>${r.servings?`Rendimento: ${esc(r.servings)} · `:''}${r.prep_time?`Preparo: ${esc(r.prep_time)} · `:''}${r.cook_time?`Cozimento: ${esc(r.cook_time)} · `:''}${r.oven_temperature?`Forno: ${esc(r.oven_temperature)}`:''}</small></article>`).join('')}</div>`:'<p class="muted">Não há receitas publicadas para este alimento.</p>')}
+      ${section('Receitas','Receitas',recipes.data?.length?`<div class="recipe-list">${recipes.data.slice(0,3).map((r,i)=>`<article class="recipe-card">${r.image_url?`<img class="recipe-image" src="${esc(r.image_url)}" alt="${esc(r.name)}" loading="lazy">`:''}<div class="recipe-heading"><span>Receita ${i+1}</span><h3>${esc(r.name)}</h3></div>${r.region?`<p class="recipe-meta">${esc(r.region)} · ${esc(r.difficulty||'')}</p>`:''}<div>${paragraphs(r.description)}</div><details><summary>Ingredientes</summary><div>${renderIngredients(r.ingredients)}</div></details><details><summary>Modo de preparo</summary><div>${paragraphs(r.instructions)}</div></details><small>${r.servings?`Rendimento: ${esc(r.servings)} · `:''}${r.prep_time?`Preparo: ${esc(r.prep_time)} · `:''}${r.cook_time?`Cozimento: ${esc(r.cook_time)} · `:''}${r.oven_temperature?`Forno: ${esc(r.oven_temperature)}`:''}</small></article>`).join('')}</div>`:'<p class="muted">Não há receitas publicadas para este alimento.</p>')}
       ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.sources?.source_type||'Fonte')}</span>${sourceLink(s.sources)}</article>`))}
     </div>`;
 }
