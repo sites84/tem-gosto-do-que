@@ -8,6 +8,7 @@ const cleanText=v=>String(v??'').replace(/\\+n/g,'\n').replace(/\r/g,'');
 const paragraphs=text=>cleanText(text).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
 const lines=text=>cleanText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
 const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
+const coverImages = { 'azeitona':'images/azeitona%20capa.webp', 'carne-de-macaco':'images/carne%20de%20macaco%20capa.webp', 'escorpiao':'images/escorpi%C3%A3o%20capa.webp' };
 const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'';
 
 function parseMyths(content){
@@ -95,6 +96,7 @@ async function load(){
     db.from('food_sources').select('sources(title,url,source_type)').eq('food_id',food.id)
   ]);
   document.title=`${food.name} | Tem Gosto do Q?`;
+  const cover = coverImages[food.slug];
   const categoryNames=(cats.data||[]).map(x=>x.categories?.name).filter(Boolean);
   const profile=[['Intensidade',food.taste_intensity],['Doçura',food.sweetness],['Acidez',food.acidity],['Amargor',food.bitterness],['Salinidade',food.salinity],['Umami',food.umami],['Gordura percebida',food.perceived_fat],['Aroma',food.aroma_intensity],['Firmeza',food.texture_firmness]];
   const bars=profile.filter(x=>x[1]!=null).map(([name,value])=>`<div class="taste-meter"><div><span>${esc(name)}</span><strong>${esc(value)}/5</strong></div><div class="meter"><i style="width:${Number(value)*20}%"></i></div></div>`).join('');
@@ -108,7 +110,7 @@ async function load(){
   const stepsBlock=(steps.data||[]).length?section('Da origem ao prato','Como chega à mesa',`<div class="stack">${steps.data.map(s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3>${paragraphs(s.description)}${s.technique?`<small>${esc(s.technique)}</small>`:''}${s.duration||s.temperature?`<div class="process-meta">${s.duration?`<span>${esc(s.duration)}</span>`:''}${s.temperature?`<span>${esc(s.temperature)}</span>`:''}</div>`:''}</div></article>`).join('')}</div>`):'';
   const prepBlock=(preps.data||[]).length?section('Preparo','Algumas formas de preparo',`<div class="stack">${preps.data.map(p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}${paragraphs(p.description)}${p.technique?`<small>${esc(p.technique)}</small>`:''}</article>`).join('')}</div>`):'';
   page.innerHTML=`
-    <section class="food-hero"><div class="food-hero-inner"><p class="eyebrow">${esc(categoryNames.join(' · ')||'Investigação gastronômica')}</p><h1>${esc(food.name)}</h1>${food.scientific_name?`<p class="scientific">${esc(food.scientific_name)}</p>`:''}<div class="answer-card"><span>Tem gosto de quê?</span><strong>${esc(food.short_taste_answer)}</strong><p>${esc(food.editorial_taste_description)}</p></div></div></section>
+    <section class="food-hero">${cover?`<img class="food-hero-cover" src="${cover}" alt="Capa de ${esc(food.name)}">`:''}<div class="food-hero-inner"><p class="eyebrow">${esc(categoryNames.join(' · ')||'Investigação gastronômica')}</p><h1>${esc(food.name)}</h1>${food.scientific_name?`<p class="scientific">${esc(food.scientific_name)}</p>`:''}<div class="answer-card"><span>Tem gosto de quê?</span><strong>${esc(food.short_taste_answer)}</strong><p>${esc(food.editorial_taste_description)}</p></div></div></section>
     <div class="section food-content">
       ${section('O que é?','O que é?',`<div class="overview-copy">${paragraphs(food.what_is||food.summary)}</div><div class="fact-grid"><article class="fact-card"><span>Origem</span><strong>${esc(food.origin_summary||'Informação em pesquisa.')}</strong></article><article class="fact-card"><span>Tempo até a colheita / abate / preparo</span><strong>${esc(food.time_to_harvest_or_ready||'Varia conforme o alimento.')}</strong></article><article class="fact-card"><span>Primeiro uso conhecido</span><strong>${esc(food.first_known_use||'Informação em pesquisa.')}</strong></article><article class="fact-card"><span>Quando é colhido / abatido</span><strong>${esc(food.harvest_window||'Varia conforme espécie, região e finalidade.')}</strong></article></div>`)}
       ${section('Perfil de sabor','Como é o sabor?',`<div class="taste-grid">${bars}</div><div class="two-columns"><div><h3>Textura</h3>${paragraphs(food.texture)}</div><div><h3>Aroma</h3>${paragraphs(food.aroma)}</div></div>`)}
