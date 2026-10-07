@@ -11,6 +11,11 @@ const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eye
 const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'';
 
 function parseMyths(content){
+  const raw=cleanText(content).trim();
+  try{
+    const data=JSON.parse(raw);
+    if(Array.isArray(data)) return data.map(x=>({q:String(x.myth||x.q||'').trim(),a:String(x.truth||x.a||'').trim()})).filter(x=>x.q&&x.a);
+  }catch(e){}
   return cleanText(content).split(/\n\s*\n/).map(block=>{
     const q=(block.match(/^MITO\s*[:—-]\s*([^\n]+)$/im)||[])[1]||'';
     const a=(block.match(/^VERDADE\s*[:—-]\s*([\s\S]*)$/im)||[])[1]||'';
@@ -18,6 +23,11 @@ function parseMyths(content){
   }).filter(x=>x.q&&x.a);
 }
 function parseFaq(content){
+  const raw=cleanText(content).trim();
+  try{
+    const data=JSON.parse(raw);
+    if(Array.isArray(data)) return data.map(x=>({q:String(x.question||x.q||'').trim(),a:String(x.answer||x.a||'').trim()})).filter(x=>x.q&&x.a);
+  }catch(e){}
   const blocks=cleanText(content).split(/\n\s*\n/).filter(Boolean);
   const explicit=blocks.map(block=>{
     const q=(block.match(/^PERGUNTA\s*[:—-]\s*([^\n]+)$/im)||[])[1]||'';
@@ -30,6 +40,11 @@ function parseFaq(content){
   return matches.map(m=>({q:m[1].trim(),a:m[2].trim()})).filter(x=>x.q&&x.a);
 }
 function parseCuriosities(content){
+  const raw=cleanText(content).trim();
+  try{
+    const data=JSON.parse(raw);
+    if(Array.isArray(data)) return data.map((x,i)=>({n:String(x.n||i+1),title:String(x.title||'').trim(),text:String(x.content||x.text||'').trim()})).filter(x=>x.title&&x.text);
+  }catch(e){}
   return lines(content).map(line=>{
     const m=line.match(/^(\d+)\.\s*(.*)$/);
     if(!m)return null;
