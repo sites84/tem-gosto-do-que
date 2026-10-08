@@ -21,6 +21,15 @@ async function getFoods() {
   return data;
 }
 
+async function getCategories() {
+  const [catsRes, relRes] = await Promise.all([
+    fetch(SUPABASE_URL + "/rest/v1/categories?select=id,name,slug,created_at&order=created_at.desc", { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } }),
+    fetch(SUPABASE_URL + "/rest/v1/food_categories?select=category_id,food_id", { headers: { apikey: SUPABASE_KEY, Authorization: "Bearer " + SUPABASE_KEY } })
+  ]);
+  if (!catsRes.ok || !relRes.ok) throw new Error("Falha ao buscar categorias.");
+  return { categories: await catsRes.json(), relations: await relRes.json() };
+}
+
 function esc(value) {
   return String(value || "").replace(/[&<>'"]/g, function(c) { return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]; });
 }
@@ -140,6 +149,34 @@ async function prerenderFood(page, food) {
 
 function dataTitle(food) { return food.name + ": tem gosto de quê? | Tem Gosto do Q?"; }
 
+const coverImages = {
+  "azeitona":"images/azeitona%20capa.webp","carne-de-macaco":"images/carne%20de%20macaco%20capa.webp","escorpiao":"images/escorpi%C3%A3o%20capa.webp","trufas":"images/trufas%20capa.webp","carne-de-jacare":"images/jacar%C3%A9%20capa.webp","caviar":"images/caviar%20capa.webp","carne-de-porco":"images/porco%20capa.webp","carne-de-elefante":"images/elefante%20capa.webp","durian":"images/durian%20capa.webp","gafanhoto":"images/gafanhoto%20capa.webp","cobra":"images/cobra%20capa.webp","carne-de-cobra":"images/cobra%20capa.webp","aspargos":"images/aspargos%20capa.webp"
+};
+function staticFoodCard(food,index) {
+  const cover = coverImages[food.slug];
+  return '<a class="food-card featured-food-card' + (cover ? ' has-cover' : '') + '" href="posts/' + encodeURIComponent(food.slug) + '/">' +
+    (cover ? '<img class="food-card-cover" src="' + cover + '" alt="Capa de ' + esc(food.name) + '" loading="lazy">' : '') +
+    '<span class="food-card-number">' + String(index + 1).padStart(2,"0") + '</span><div class="food-card-body"><p class="food-card-label">Tem gosto de quê?</p><strong>' + esc(food.name) + '</strong><span>' + esc(food.short_taste_answer || food.summary || 'Ver investigação completa') + '</span></div><span class="food-card-arrow" aria-hidden="true">↗</span></a>';
+}
+function updateHomepageSource(foods, categories, relations) {
+  const file = path.join(ROOT, "index.html");
+  let html = fs.readFileSync(file, "utf8");
+  const recent = foods.slice(0,8).map(staticFoodCard).join("");
+  const byId = Object.fromEntries(foods.map(f => [f.id, f]));
+  const byCat = {};
+  relations.forEach(r => { if (!byCat[r.category_id]) byCat[r.category_id] = []; if (byId[r.food_id]) byCat[r.category_id].push(byId[r.food_id]); });
+  const cats = categories.map(cat => {
+    const items = byCat[cat.id] || [];
+    return '<section class="category-showcase"><div class="category-showcase-heading"><div><p class="eyebrow">CATEGORIA</p><h3>' + esc(cat.name) + '</h3></div><span>' + items.length + ' ' + (items.length === 1 ? 'investigação' : 'investigações') + '</span></div><div class="category-carousel">' + (items.length ? items.map(staticFoodCard).join("") : '<p class="loading">Ainda não há investigações nesta categoria.</p>') + '</div></section>';
+  }).join("");
+  const directory = foods.map(f => '<a class="directory-link" href="posts/' + esc(f.slug) + '/"><strong>' + esc(f.name) + '</strong><span>' + esc(f.short_taste_answer || f.summary || "Abrir investigação") + '</span><b aria-hidden="true">↗</b></a>').join("");
+  html = html.replace(/<!-- HOME_RECENT_START -->[\\s\\S]*?<!-- HOME_RECENT_END -->/, '<!-- HOME_RECENT_START -->' + recent + '<!-- HOME_RECENT_END -->');
+  html = html.replace(/<!-- HOME_CATEGORIES_START -->[\\s\\S]*?<!-- HOME_CATEGORIES_END -->/, '<!-- HOME_CATEGORIES_START -->' + cats + '<!-- HOME_CATEGORIES_END -->');
+  html = html.replace(/<!-- SEO_DIRECTORY_START -->[\\s\\S]*?<!-- SEO_DIRECTORY_END -->/, '<!-- SEO_DIRECTORY_START -->' + directory + '<!-- SEO_DIRECTORY_END -->');
+  html = html.replace('<html lang="pt-BR" data-home-static="false">','<html lang="pt-BR" data-home-static="true">');
+  fs.writeFileSync(file, html);
+}
+
 function buildSitemap(foods) {
   const rows = ["<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\" xmlns:image=\"http://www.google.com/schemas/sitemap-image/1.1\">"];
   rows.push("<url><loc>" + SITE_URL + "/</loc></url>");
@@ -164,7 +201,8 @@ function updateIndexSource(foods) {
 
 async function main() {
   const foods = await getFoods();
-  updateIndexSource(foods);
+  const categoryData = await getCategories();
+  updateHomepageSource(foods, categoryData.categories, categoryData.relations);
   const server = spawn("python3", ["-m", "http.server", "4173", "-d", "."], { cwd: ROOT, stdio: "ignore" });
   const browser = await chromium.launch({ headless: true });
   try {
