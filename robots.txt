@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://sites84.github.io/tem-gosto-do-que/sitemap.xml
