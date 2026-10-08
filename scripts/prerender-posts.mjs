@@ -26,7 +26,7 @@ function esc(value) {
 }
 
 function metaDescription(food) {
-  const raw = String([food.short_taste_answer, food.summary].filter(Boolean).join(" ")).replace(/\s+/g, " ").trim();
+  const raw = String([food.name + ": descubra tem gosto de quê e como variam sabor, textura e aroma.", food.short_taste_answer, food.summary].filter(Boolean).join(" ")).replace(/\s+/g, " ").trim();
   if (raw.length <= 158) return raw;
   const cut = raw.slice(0, 158);
   const last = cut.lastIndexOf(" ");
@@ -42,9 +42,12 @@ async function prerenderFood(page, food) {
   await sleep(300);
   await page.evaluate(function(data) {
     const name = data.name;
+    const articleHeadline = name + ": tem gosto de quê?";
     const description = data.description;
     const canonical = data.canonical;
     document.title = data.title;
+    const pageHeading = document.querySelector(".food-hero h1");
+    if (pageHeading) pageHeading.textContent = articleHeadline;
     const setMeta = function(name, content) {
       let node = document.querySelector("meta[name=\"" + name + "\"]");
       if (!node) { node = document.createElement("meta"); node.setAttribute("name", name); document.head.appendChild(node); }
@@ -83,7 +86,7 @@ async function prerenderFood(page, food) {
       "@context": "https://schema.org",
       "@type": "Article",
       "@id": canonical + "#article",
-      "headline": name,
+      "headline": articleHeadline,
       "description": description,
       "inLanguage": "pt-BR",
       "mainEntityOfPage": {"@type":"WebPage","@id":canonical},
