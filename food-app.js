@@ -95,12 +95,19 @@ async function load(){
     db.from('recipes').select('*').eq('food_id',food.id).eq('status','published').order('display_order'),
     db.from('food_sources').select('sources(title,url,source_type)').eq('food_id',food.id)
   ]);
+  const { data: relatedPosts } = await db.from('foods').select('id,name,slug,summary,short_taste_answer,status,updated_at').eq('status','published').neq('id',food.id).order('updated_at',{ascending:false}).limit(6);
   document.title=`${food.name} | Tem Gosto do Q?`;
   const cover = coverImages[food.slug];
   const categoryNames=(cats.data||[]).map(x=>x.categories?.name).filter(Boolean);
   const profile=[['Intensidade',food.taste_intensity],['Doçura',food.sweetness],['Acidez',food.acidity],['Amargor',food.bitterness],['Salinidade',food.salinity],['Umami',food.umami],['Gordura percebida',food.perceived_fat],['Aroma',food.aroma_intensity],['Firmeza',food.texture_firmness]];
   const bars=profile.filter(x=>x[1]!=null).map(([name,value])=>`<div class="taste-meter"><div><span>${esc(name)}</span><strong>${esc(value)}/5</strong></div><div class="meter"><i style="width:${Number(value)*20}%"></i></div></div>`).join('');
-  const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||'Fonte')}</a>`:'';
+  function foodCardRelated(food,index=0){
+  const cover=coverImages[food.slug];
+  return '<a class="related-post-card" href="food.html?slug='+encodeURIComponent(food.slug)+'">'+
+    (cover?'<img src="'+cover+'" alt="Capa de '+esc(food.name)+'" loading="lazy">':'')+
+    '<div class="related-post-body"><span>Tem gosto de quê?</span><strong>'+esc(food.name)+'</strong><p>'+esc(food.short_taste_answer||food.summary||'Ver investigação completa')+'</p></div><b aria-hidden="true">↗</b></a>';
+}
+const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||'Fonte')}</a>`:'';
   const extra=(editorial.data||[]).filter(x=>!['curiosity','myths','faq'].includes(x.section_type) && !['O que é?','O que as pessoas dizem'].includes(x.title.trim()));
   const myths=(editorial.data||[]).find(x=>x.section_type==='myths');
   const faq=(editorial.data||[]).find(x=>x.section_type==='faq');
@@ -123,6 +130,7 @@ async function load(){
       ${faq?section('Perguntas frequentes','Perguntas frequentes',editorialBody('faq',faq.content)):''}
       ${section('Curiosidades',curios.length?`${curios.length} curiosidades`:'Curiosidades',curios.length?`<div class="curiosity-list">${curios.map(c=>`<details class="curiosity-item"><summary><span>${String(c.n).padStart(2,'0')}</span><strong>${esc(c.title)}</strong></summary><div class="curiosity-answer">${paragraphs(c.text)}</div></details>`).join('')}</div>`:'<p class="muted">As curiosidades ainda estão sendo reunidas.</p>')}
       ${section('Receitas','Receitas',recipes.data?.length?`<div class="recipe-list">${recipes.data.slice(0,3).map((r,i)=>`<article class="recipe-card">${r.image_url?`<img class="recipe-image" src="${esc(r.image_url)}" alt="${esc(r.name)}" loading="lazy">`:''}<div class="recipe-heading"><span>Receita ${i+1}</span><h3>${esc(r.name)}</h3></div>${r.region?`<p class="recipe-meta">${esc(r.region)} · ${esc(r.difficulty||'')}</p>`:''}<div>${paragraphs(r.description)}</div><details><summary>Ingredientes</summary><div>${renderIngredients(r.ingredients)}</div></details><details><summary>Modo de preparo</summary><div>${paragraphs(r.instructions)}</div></details><small>${r.servings?`Rendimento: ${esc(r.servings)} · `:''}${r.prep_time?`Preparo: ${esc(r.prep_time)} · `:''}${r.cook_time?`Cozimento: ${esc(r.cook_time)} · `:''}${r.oven_temperature?`Forno: ${esc(r.oven_temperature)}`:''}</small></article>`).join('')}</div>`:'<p class="muted">Não há receitas publicadas para este alimento.</p>')}
+      ${section('Posts relacionados','Posts relacionados',relatedPosts?.length?'<div class="related-posts-grid">'+relatedPosts.map((p,i)=>foodCardRelated(p,i)).join('')+'</div>':'<p class="muted">Ainda não há posts relacionados.</p>')}
       ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.sources?.source_type||'Fonte')}</span>${sourceLink(s.sources)}</article>`))}
     </div>`;
 }
