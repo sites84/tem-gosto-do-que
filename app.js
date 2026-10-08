@@ -32,7 +32,7 @@ const coverImages = {
 function foodCard(food, index=0) {
   const number = String(index + 1).padStart(2, '0');
   const cover = coverImages[food.slug];
-  return `<a class="food-card featured-food-card${cover ? ' has-cover' : ''}" href="food.html?slug=${encodeURIComponent(food.slug)}">
+  return `<a class="food-card featured-food-card${cover ? ' has-cover' : ''}" href="posts/${encodeURIComponent(food.slug) + "/"}">
     ${cover ? `<img class="food-card-cover" src="${cover}" alt="Capa de ${escapeHtml(food.name)}" loading="lazy">` : ''}
     <span class="food-card-number">${number}</span>
     <div class="food-card-body">
@@ -96,7 +96,7 @@ async function filterByCategory(categoryId, categoryName) {
 }
 
 async function searchFoods(term) {
-  const clean = term.trim();
+  const clean = term.trim().replace(/[\\,()]/g,' ');
   if (!clean) return;
   resultSection.classList.remove('hidden');
   resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
