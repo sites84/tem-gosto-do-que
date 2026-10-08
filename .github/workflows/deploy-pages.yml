@@ -23,7 +23,7 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Pages
+      - name: Setup Node\n        uses: actions/setup-node@v4\n        with:\n          node-version: 20\n      - name: Install Playwright\n        run: |\n          npm install --no-save --package-lock=false playwright\n          npx playwright install --with-deps chromium\n      - name: Generate SEO pages\n        run: node scripts/prerender-posts.mjs\n      - name: Remove build dependencies\n        run: rm -rf node_modules\n      - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
