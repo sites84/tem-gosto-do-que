@@ -116,7 +116,7 @@ async function prerenderFood(page, food) {
     document.querySelectorAll("a").forEach(function(node) {
       const href = node.getAttribute("href") || "";
       if (href === "./" || href === "") node.setAttribute("href", "../../");
-      else if (href.startsWith("./#")) node.setAttribute("href", "../../" + href.slice(1));
+      else if (href.startsWith("./#")) node.setAttribute("href", "../../" + href.slice(2));
       else if (href.startsWith("posts/")) node.setAttribute("href", "../" + href.slice(6));
       else if (href.startsWith("food.html?slug=")) {
         const oldSlug = new URL(href, location.href).searchParams.get("slug");
@@ -178,7 +178,7 @@ async function main() {
     server.kill("SIGTERM");
   }
   fs.writeFileSync(path.join(ROOT, "sitemap.xml"), buildSitemap(foods));
-  fs.writeFileSync(path.join(ROOT, "robots.txt"), "User-agent: *\\nAllow: /\\n\\nSitemap: " + SITE_URL + "/sitemap.xml\\n");
+  fs.writeFileSync(path.join(ROOT, "robots.txt"), "User-agent: *\nAllow: /\n\nSitemap: " + SITE_URL + "/sitemap.xml\n");
   console.log("SEO prerender concluído: " + foods.length + " posts.");
 }
 
