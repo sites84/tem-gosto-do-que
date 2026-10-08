@@ -44,6 +44,15 @@ function foodCard(food, index=0) {
   </a>`;
 }
 
+async function loadRecentPosts() {
+  const recentList = document.querySelector('#recent-list');
+  if (!recentList) return;
+  recentList.innerHTML = '<p class="loading">Carregando posts recentes...</p>';
+  const { data, error } = await db.from('foods').select('id,name,slug,summary,short_taste_answer,status,updated_at').eq('status','published').order('updated_at',{ascending:false}).limit(8);
+  if (error) { recentList.innerHTML = '<p class="loading">Não foi possível carregar os posts recentes.</p>'; return; }
+  recentList.innerHTML = (data||[]).map(foodCard).join('') || '<p class="loading">Ainda não há posts publicados.</p>';
+}
+
 async function loadCategories() {
   categoryList.innerHTML = '<p class="loading">Carregando categorias...</p>';
   const [{ data: categories, error: ce }, { data: relations, error: re }] = await Promise.all([
@@ -129,4 +138,5 @@ clearSearch.addEventListener('click', () => {
   searchInput.focus();
 });
 
+loadRecentPosts();
 loadCategories();
