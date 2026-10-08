@@ -8,6 +8,7 @@ const SITE_URL = "https://sites84.github.io/tem-gosto-do-que";
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://saipuhuzotusqfihvjgw.supabase.co";
 const SUPABASE_KEY = process.env.SUPABASE_KEY || "sb_publishable_1LQ6Iy5AO8TB4JwtsdMokw_aWgFHHFc";
 const ROOT = process.cwd();
+// Build all published foods from Supabase so newly published posts are included in the static site.
 
 async function getFoods() {
   const url = new URL(SUPABASE_URL + "/rest/v1/foods");
