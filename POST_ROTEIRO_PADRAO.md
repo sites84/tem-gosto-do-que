@@ -24,7 +24,16 @@ Estrutura obrigatória:
     "slug": "",
     "scientific_name": "",
     "what_is": "",
-    "taste_narrative": ""
+    "taste_narrative": "",
+    "origin_summary": "",
+    "time_to_harvest_or_ready": "",
+    "first_known_use": "",
+    "harvest_window": "",
+    "taste_profile": {
+      "taste": "",
+      "texture": "",
+      "aroma": ""
+    }
   },
   "editorial_sections": [],
   "history_sections": [],
@@ -34,7 +43,11 @@ Estrutura obrigatória:
   "sources": []
 }
 
-Não criar campos adicionais.
+Não criar campos adicionais além dos campos obrigatórios acima.
+
+Os campos `origin_summary`, `time_to_harvest_or_ready`, `first_known_use`, `harvest_window` e `taste_profile` são obrigatórios em todos os posts. Nunca deixá-los vazios ou preenchê-los com textos genéricos como “Informação em pesquisa”, “Varia conforme o alimento” ou equivalentes. Pesquisar o alimento específico. Quando não houver dado confiável disponível, usar uma estimativa editorial média claramente identificada como estimativa, sem apresentá-la como fato documentado.
+
+`taste_profile.taste`, `taste_profile.texture` e `taste_profile.aroma` também são obrigatórios. Eles devem ser derivados da pesquisa sensorial do próprio alimento e não podem repetir fórmulas genéricas.
 
 ## REGRA ABSOLUTA CONTRA DUPLICIDADE
 
@@ -53,6 +66,24 @@ faq é o único local para FAQ. Não colocar FAQ em editorial_sections.
 recipes é o único local para receitas. Não colocar receitas em editorial_sections.
 
 Antes de entregar, verificar internamente se alguma informação importante foi repetida.
+
+## CAMPOS EDITORIAIS OBRIGATÓRIOS
+
+`origin_summary`: origem geográfica, distribuição histórica ou origem da cadeia alimentar, conforme o tipo de alimento.
+
+`time_to_harvest_or_ready`: tempo médio até colheita, abate, maturidade comercial ou preparo final. Para alimentos sem “colheita”, adaptar ao ciclo real do produto. Se não houver ciclo comercial, explicar isso e, quando necessário, fornecer uma estimativa biológica média identificada como estimativa.
+
+`first_known_use`: primeiro uso alimentar conhecido ou a melhor estimativa histórica disponível, distinguindo evidência de estimativa.
+
+`harvest_window`: época de colheita, abate, captura legal, maturação ou disponibilidade sazonal, conforme o alimento. Se não houver sazonalidade, informar isso de forma específica para o alimento.
+
+`taste_profile.taste`: resumo direto do sabor.
+
+`taste_profile.texture`: resumo direto da textura.
+
+`taste_profile.aroma`: resumo direto do aroma.
+
+Esses campos devem ser preenchidos antes da geração das demais seções.
 
 ## food.what_is
 
@@ -320,8 +351,17 @@ Nunca armazenar \\n como texto literal quando a intenção for uma quebra de lin
 19. História está em ordem cronológica.
 20. Não existem seções duplicadas.
 21. Não existem informações inventadas.
-22. Todas as URLs são reais.
-23. O JSON está pronto para importação automática.
+22. origin_summary está preenchido especificamente para o alimento.
+23. time_to_harvest_or_ready está preenchido especificamente para o alimento.
+24. first_known_use está preenchido especificamente para o alimento.
+25. harvest_window está preenchido especificamente para o alimento.
+26. taste_profile.taste está preenchido.
+27. taste_profile.texture está preenchido.
+28. taste_profile.aroma está preenchido.
+29. Nenhum desses campos usa texto genérico como “Informação em pesquisa” ou “Varia conforme o alimento”.
+30. Quando houver estimativa, ela está explicitamente identificada como estimativa.
+31. Todas as URLs são reais.
+32. O JSON está pronto para importação automática.
 
 Se qualquer item falhar, corrigir antes de entregar.
 
