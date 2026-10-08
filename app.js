@@ -20,7 +20,13 @@ const coverImages = {
   'trufas': 'images/trufas%20capa.webp',
   'carne-de-jacare': 'images/jacar%C3%A9%20capa.webp',
   'caviar': 'images/caviar%20capa.webp',
-  'carne-de-porco': 'images/porco%20capa.webp'
+  'carne-de-porco': 'images/porco%20capa.webp',
+  'carne-de-elefante': 'images/elefante%20capa.webp',
+  'durian': 'images/durian%20capa.webp',
+  'gafanhoto': 'images/gafanhoto%20capa.webp',
+  'cobra': 'images/cobra%20capa.webp',
+  'carne-de-cobra': 'images/cobra%20capa.webp',
+  'aspargos': 'images/aspargos%20capa.webp'
 };
 
 function foodCard(food, index=0) {
