@@ -138,5 +138,7 @@ clearSearch.addEventListener('click', () => {
   searchInput.focus();
 });
 
-loadRecentPosts();
-loadCategories();
+if (document.documentElement.dataset.homeStatic !== 'true') {
+  loadRecentPosts();
+  loadCategories();
+}
