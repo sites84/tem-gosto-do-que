@@ -96,14 +96,14 @@ async function load(){
     db.from('food_sources').select('sources(title,url,source_type)').eq('food_id',food.id)
   ]);
   const { data: relatedPosts } = await db.from('foods').select('id,name,slug,summary,short_taste_answer,status,updated_at').eq('status','published').neq('id',food.id).order('updated_at',{ascending:false}).limit(6);
-  document.title=`${food.name}: tem gosto de quê? | Tem Gosto do Q?`;\n  const metaDescription=String(food.short_taste_answer||food.summary||"").replace(/\\s+/g," ").trim().slice(0,158);\n  const upsertMeta=(name,content)=>{let m=document.querySelector(`meta[name="${name}"]`);if(!m){m=document.createElement("meta");m.setAttribute("name",name);document.head.appendChild(m);}m.setAttribute("content",content||"");};\n  const upsertProp=(property,content)=>{let m=document.querySelector(`meta[property="${property}"]`);if(!m){m=document.createElement("meta");m.setAttribute("property",property);document.head.appendChild(m);}m.setAttribute("content",content||"");};\n  upsertMeta("robots","noindex,follow,noarchive,nosnippet");\n  upsertMeta("description",metaDescription);\n  upsertProp("og:title",document.title);\n  upsertProp("og:description",metaDescription);\n  const canonicalUrl=`${location.origin}${location.pathname.replace(/food\\.html$/,"")}posts/${encodeURIComponent(food.slug)}/`;\n  let canonicalNode=document.querySelector('link[rel="canonical"]');if(!canonicalNode){canonicalNode=document.createElement("link");canonicalNode.rel="canonical";document.head.appendChild(canonicalNode);}canonicalNode.href=canonicalUrl;
+  document.title=`${food.name}: tem gosto de quê? | Tem Gosto do Q?`;
   const cover = coverImages[food.slug];
   const categoryNames=(cats.data||[]).map(x=>x.categories?.name).filter(Boolean);
   const profile=[['Intensidade',food.taste_intensity],['Doçura',food.sweetness],['Acidez',food.acidity],['Amargor',food.bitterness],['Salinidade',food.salinity],['Umami',food.umami],['Gordura percebida',food.perceived_fat],['Aroma',food.aroma_intensity],['Firmeza',food.texture_firmness]];
   const bars=profile.filter(x=>x[1]!=null).map(([name,value])=>`<div class="taste-meter"><div><span>${esc(name)}</span><strong>${esc(value)}/5</strong></div><div class="meter"><i style="width:${Number(value)*20}%"></i></div></div>`).join('');
   function foodCardRelated(food,index=0){
   const cover=coverImages[food.slug];
-  return '<a class="related-post-card" href="food.html?slug='+encodeURIComponent(food.slug)+'">'+
+  return '<a class="related-post-card" href="posts/'+encodeURIComponent(food.slug)+'/">'+
     (cover?'<img src="'+cover+'" alt="Capa de '+esc(food.name)+'" loading="lazy">':'')+
     '<div class="related-post-body"><span>Tem gosto de quê?</span><strong>'+esc(food.name)+'</strong><p>'+esc(food.short_taste_answer||food.summary||'Ver investigação completa')+'</p></div><b aria-hidden="true">↗</b></a>';
 }
