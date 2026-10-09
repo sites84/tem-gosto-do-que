@@ -138,3 +138,4 @@ const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopene
     </div>`;
 }
 load();
+// Trigger GitHub Pages rebuild for the new pepino-do-mar post.
