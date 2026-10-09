@@ -8,6 +8,7 @@ const cleanText=v=>String(v??'').replace(/\\+n/g,'\n').replace(/\r/g,'');
 const paragraphs=text=>cleanText(text).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
 const lines=text=>cleanText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
 const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
+// Carne de baleia ainda não tem uma capa própria aprovada; o post é gerado sem imagem até existir o arquivo 16:9.
 const coverImages = { 'azeitona':'images/azeitona%20capa.webp', 'carne-de-macaco':'images/carne%20de%20macaco%20capa.webp', 'escorpiao':'images/escorpi%C3%A3o%20capa.webp', 'trufas':'images/trufas%20capa.webp', 'carne-de-jacare':'images/jacar%C3%A9%20capa.webp', 'caviar':'images/caviar%20capa.webp', 'carne-de-porco':'images/porco%20capa.webp', 'carne-de-elefante':'images/elefante%20capa.webp', 'durian':'images/durian%20capa.webp', 'gafanhoto':'images/gafanhoto%20capa.webp', 'cobra':'images/cobra%20capa.webp', 'carne-de-cobra':'images/cobra%20capa.webp', 'aspargos':'images/aspargos%20capa.webp' };
 const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'';
 
