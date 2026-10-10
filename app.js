@@ -26,7 +26,14 @@ const coverImages = {
   'gafanhoto': 'images/gafanhoto%20capa.webp',
   'cobra': 'images/cobra%20capa.webp',
   'carne-de-cobra': 'images/cobra%20capa.webp',
-  'aspargos': 'images/aspargos%20capa.webp'
+  'aspargos': 'images/aspargos%20capa.webp',
+  'pepino-do-mar': 'images/Pepino%20do%20mar%20capa.webp',
+  'kimchi': 'images/Kimchi.webp',
+  'foie-gras': 'images/Foie%20gras%20capa.webp',
+  'avestruz': 'images/Avestruz%20capa.webp',
+  'carne-de-avestruz': 'images/Avestruz%20capa.webp',
+  'carne-de-baleia': 'images/Baleia%20capa.webp',
+  'balut': 'images/Balut%20capa.webp'
 };
 
 function foodCard(food, index=0) {
