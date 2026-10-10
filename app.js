@@ -14,26 +14,26 @@ function escapeHtml(value='') {
 }
 
 const coverImages = {
-  'azeitona': 'images/azeitona%20capa.webp',
-  'carne-de-macaco': 'images/carne%20de%20macaco%20capa.webp',
-  'escorpiao': 'images/escorpi%C3%A3o%20capa.webp',
-  'trufas': 'images/trufas%20capa.webp',
-  'carne-de-jacare': 'images/jacar%C3%A9%20capa.webp',
-  'caviar': 'images/caviar%20capa.webp',
-  'carne-de-porco': 'images/porco%20capa.webp',
-  'carne-de-elefante': 'images/elefante%20capa.webp',
-  'durian': 'images/durian%20capa.webp',
-  'gafanhoto': 'images/gafanhoto%20capa.webp',
-  'cobra': 'images/cobra%20capa.webp',
-  'carne-de-cobra': 'images/cobra%20capa.webp',
-  'aspargos': 'images/aspargos%20capa.webp',
-  'pepino-do-mar': 'images/Pepino%20do%20mar%20capa.webp',
-  'kimchi': 'images/Kimchi.webp',
-  'foie-gras': 'images/Foie%20gras%20capa.webp',
-  'avestruz': 'images/Avestruz%20capa.webp',
-  'carne-de-avestruz': 'images/Avestruz%20capa.webp',
-  'carne-de-baleia': 'images/Baleia%20capa.webp',
-  'balut': 'images/Balut%20capa.webp'
+  'azeitona': '/tem-gosto-do-que/images/azeitona%20capa.webp',
+  'carne-de-macaco': '/tem-gosto-do-que/images/carne%20de%20macaco%20capa.webp',
+  'escorpiao': '/tem-gosto-do-que/images/escorpi%C3%A3o%20capa.webp',
+  'trufas': '/tem-gosto-do-que/images/trufas%20capa.webp',
+  'carne-de-jacare': '/tem-gosto-do-que/images/jacar%C3%A9%20capa.webp',
+  'caviar': '/tem-gosto-do-que/images/caviar%20capa.webp',
+  'carne-de-porco': '/tem-gosto-do-que/images/porco%20capa.webp',
+  'carne-de-elefante': '/tem-gosto-do-que/images/elefante%20capa.webp',
+  'durian': '/tem-gosto-do-que/images/durian%20capa.webp',
+  'gafanhoto': '/tem-gosto-do-que/images/gafanhoto%20capa.webp',
+  'cobra': '/tem-gosto-do-que/images/cobra%20capa.webp',
+  'carne-de-cobra': '/tem-gosto-do-que/images/cobra%20capa.webp',
+  'aspargos': '/tem-gosto-do-que/images/aspargos%20capa.webp',
+  'pepino-do-mar': '/tem-gosto-do-que/images/Pepino%20do%20mar%20capa.webp',
+  'kimchi': '/tem-gosto-do-que/images/Kimchi.webp',
+  'foie-gras': '/tem-gosto-do-que/images/Foie%20gras%20capa.webp',
+  'avestruz': '/tem-gosto-do-que/images/Avestruz%20capa.webp',
+  'carne-de-avestruz': '/tem-gosto-do-que/images/Avestruz%20capa.webp',
+  'carne-de-baleia': '/tem-gosto-do-que/images/Baleia%20capa.webp',
+  'balut': '/tem-gosto-do-que/images/Balut%20capa.webp'
 };
 
 function foodCard(food, index=0) {
