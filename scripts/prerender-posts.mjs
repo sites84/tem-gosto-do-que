@@ -174,6 +174,28 @@ function updateHomepageSource(foods, categories, relations) {
   html = html.replace(/<!-- HOME_RECENT_START -->[\\s\\S]*?<!-- HOME_RECENT_END -->/, '<!-- HOME_RECENT_START -->' + recent + '<!-- HOME_RECENT_END -->');
   html = html.replace(/<!-- HOME_CATEGORIES_START -->[\\s\\S]*?<!-- HOME_CATEGORIES_END -->/, '<!-- HOME_CATEGORIES_START -->' + cats + '<!-- HOME_CATEGORIES_END -->');
   html = html.replace(/<!-- SEO_DIRECTORY_START -->[\\s\\S]*?<!-- SEO_DIRECTORY_END -->/, '<!-- SEO_DIRECTORY_START -->' + directory + '<!-- SEO_DIRECTORY_END -->');
+  const itemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Posts publicados do Tem Gosto do Q?",
+    "itemListElement": foods.map(function(food, index) {
+      return {
+        "@type": "ListItem",
+        "position": index + 1,
+        "name": food.name,
+        "url": SITE_URL + "/posts/" + encodeURIComponent(food.slug) + "/"
+      };
+    })
+  };
+  const itemListScript = '<script type="application/ld+json">' + JSON.stringify(itemList) + '</script>';
+  html = html.replace(/<script type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/g, function(match, json) {
+    try {
+      const data = JSON.parse(json);
+      return data && data["@type"] === "ItemList" ? itemListScript : match;
+    } catch (_) {
+      return match;
+    }
+  });
   html = html.replace('<html lang="pt-BR" data-home-static="false">','<html lang="pt-BR" data-home-static="true">');
   fs.writeFileSync(file, html);
 }
