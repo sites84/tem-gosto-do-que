@@ -188,7 +188,7 @@ function updateHomepageSource(foods, categories, relations) {
     })
   };
   const itemListScript = '<script type="application/ld+json">' + JSON.stringify(itemList) + '</script>';
-  html = html.replace(/<script type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/g, function(match, json) {
+  html = html.replace(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g, function(match, json) {
     try {
       const data = JSON.parse(json);
       return data && data["@type"] === "ItemList" ? itemListScript : match;
