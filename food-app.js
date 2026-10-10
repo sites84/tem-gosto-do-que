@@ -111,8 +111,8 @@ async function load(){
     '<div class="related-post-body"><span>Tem gosto de quê?</span><strong>'+esc(food.name)+'</strong><p>'+esc(food.short_taste_answer||food.summary||'Ver investigação completa')+'</p></div><b aria-hidden="true">↗</b></a>';
 }
 const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">${esc(s.title||'Fonte')}</a>`:'';
-  const extra=(editorial.data||[]).filter(x=>!['curiosity','myths','faq'].includes(x.section_type) && !['O que é?','O que as pessoas dizem'].includes(x.title.trim()));
-  const myths=(editorial.data||[]).find(x=>x.section_type==='myths');
+  const extra=(editorial.data||[]).filter(x=>!['curiosity','myths','faq'].includes(x.section_type) && !['O que é?','O que as pessoas dizem','Mitos e verdades'].includes(x.title.trim()));
+  const myths=(editorial.data||[]).find(x=>x.section_type==='myths'||x.title.trim()==='Mitos e verdades');
   const faq=(editorial.data||[]).find(x=>x.section_type==='faq');
   const curiositySections=(editorial.data||[]).filter(x=>x.section_type==='curiosity');
   const curios=curiositySections.map((x,i)=>({n:String(i+1),title:String(x.title||'').trim(),text:cleanText(x.content).trim()})).filter(x=>x.title&&x.text);
