@@ -150,11 +150,9 @@ async function prerenderFood(page, food) {
 
 function dataTitle(food) { return food.name + ": tem gosto de quê? | Tem Gosto do Q?"; }
 
-const coverImages = {
-  "azeitona":"images/azeitona%20capa.webp","carne-de-macaco":"images/carne%20de%20macaco%20capa.webp","escorpiao":"images/escorpi%C3%A3o%20capa.webp","trufas":"images/trufas%20capa.webp","carne-de-jacare":"images/jacar%C3%A9%20capa.webp","caviar":"images/caviar%20capa.webp","carne-de-porco":"images/porco%20capa.webp","carne-de-elefante":"images/elefante%20capa.webp","durian":"images/durian%20capa.webp","gafanhoto":"images/gafanhoto%20capa.webp","cobra":"images/cobra%20capa.webp","carne-de-cobra":"images/cobra%20capa.webp","aspargos":"images/aspargos%20capa.webp"
-};
+const coverImages = { "azeitona":"images/azeitona%20capa.webp","carne-de-macaco":"images/carne%20de%20macaco%20capa.webp","escorpiao":"images/escorpi%C3%A3o%20capa.webp","trufas":"images/trufas%20capa.webp","carne-de-jacare":"images/jacar%C3%A9%20capa.webp","caviar":"images/caviar%20capa.webp","carne-de-porco":"images/porco%20capa.webp","carne-de-elefante":"images/elefante%20capa.webp","durian":"images/durian%20capa.webp","gafanhoto":"images/gafanhoto%20capa.webp","cobra":"images/cobra%20capa.webp","carne-de-cobra":"images/cobra%20capa.webp","aspargos":"images/aspargos%20capa.webp","pepino-do-mar":"images/Pepino%20do%20mar%20capa.webp","kimchi":"images/Kimchi.webp","foie-gras":"images/Foie%20gras%20capa.webp","avestruz":"images/Avestruz%20capa.webp","carne-de-avestruz":"images/Avestruz%20capa.webp","carne-de-baleia":"images/Baleia%20capa.webp","balut":"images/Balut%20capa.webp" };
 function staticFoodCard(food,index) {
-  const cover = coverImages[food.slug];
+  const cover = food.main_image_url || coverImages[food.slug];
   return '<a class="food-card featured-food-card' + (cover ? ' has-cover' : '') + '" href="posts/' + encodeURIComponent(food.slug) + '/">' +
     (cover ? '<img class="food-card-cover" src="' + cover + '" alt="Capa de ' + esc(food.name) + '" loading="lazy">' : '') +
     '<span class="food-card-number">' + String(index + 1).padStart(2,"0") + '</span><div class="food-card-body"><p class="food-card-label">Tem gosto de quê?</p><strong>' + esc(food.name) + '</strong><span>' + esc(food.short_taste_answer || food.summary || 'Ver investigação completa') + '</span></div><span class="food-card-arrow" aria-hidden="true">↗</span></a>';
