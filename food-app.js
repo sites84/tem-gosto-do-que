@@ -273,7 +273,10 @@ function initYouTubeFallbacks(){
       };
       if(ids.length)playCandidate();
       else{
-        frame.innerHTML='<div class="video-unavailable"><strong>Vídeo relacionado</strong><p>Abra a busca do YouTube para escolher um vídeo disponível.</p></div>';
+        const query=frame.dataset.videoQuery||'vídeo sobre alimento';
+        const searchUrl='https://www.youtube.com/results?search_query='+encodeURIComponent(query);
+        const foodName=frame.closest('.food-video-section')?.querySelector('h2')?.textContent.replace(/^Vídeo sobre /,'')||'este alimento';
+        frame.innerHTML='<a class="video-preview-card video-search-card" href="'+searchUrl+'" target="_blank" rel="noopener noreferrer"><span class="video-preview-play">▶</span><span class="video-preview-copy"><strong>Vídeos sobre '+foodName+'</strong><small>Toque para escolher um vídeo no YouTube</small></span><span class="video-preview-brand">YouTube</span></a>';
         if(fallback)fallback.hidden=false;
       }
     });
