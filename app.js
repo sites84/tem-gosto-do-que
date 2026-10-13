@@ -32,6 +32,7 @@ const coverImages = {
   'foie-gras': '/tem-gosto-do-que/images/Foie%20gras%20capa.webp',
   'avestruz': '/tem-gosto-do-que/images/Avestruz%20capa.webp',
   'carne-de-avestruz': '/tem-gosto-do-que/images/Avestruz%20capa.webp',
+  'carne-de-cachorro': 'https://s.yimg.com/ny/api/res/1.2/1o8TqxJNdW_4424uoZcL9Q--/YXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTY0MDtjZj13ZWJw/https%3A/media-mbst-pub-ue1.s3.amazonaws.com/creatr-uploaded-images/2020-05/9d8ebb50-8b46-11ea-b2d7-882ea11741f9',
   'carne-de-baleia': '/tem-gosto-do-que/images/Baleia%20capa.webp',
   'balut': '/tem-gosto-do-que/images/Balut%20capa.webp'
 };
