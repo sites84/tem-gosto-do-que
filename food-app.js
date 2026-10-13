@@ -63,7 +63,9 @@ const youtubeVideos = {
   },
   "pepino-do-mar": {
     "id": "OWiE18dqyHk",
-    "title": "Pepino-do-mar é comida exótica"
+    "fallbackIds": ["wU4VWpMrH5Q"],
+    "title": "Pepino-do-mar é comida exótica",
+    "q": "pepino do mar comida degustação"
   },
   "kimchi": {
     "id": "3TDNpcUwWsA",
@@ -83,7 +85,9 @@ const youtubeVideos = {
   },
   "carne-de-baleia": {
     "id": "zAQEq6_0jLA",
-    "title": "Carne de baleia — AFP Português"
+    "fallbackIds": ["VGy4wiocoFg"],
+    "title": "Carne de baleia — AFP Português",
+    "q": "carne de baleia documentário gastronomia"
   },
   "balut": {
     "id": "Y9HBHxRpzc8",
@@ -200,8 +204,9 @@ const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopene
   const historyBlock=(history.data||[]).length?section('Linha do tempo','A história de '+food.name,list(history.data||[],h=>`<article class="timeline-item"><span>${esc(h.period_label)}</span><div><h3>${esc(h.title)}</h3>${paragraphs(h.content)}</div></article>`)):'';
   const stepsBlock=(steps.data||[]).length?section('Da origem ao prato','Como chega à mesa',`<div class="stack">${steps.data.map(s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3>${paragraphs(s.description)}${s.technique?`<small>${esc(s.technique)}</small>`:''}${s.duration||s.temperature?`<div class="process-meta">${s.duration?`<span>${esc(s.duration)}</span>`:''}${s.temperature?`<span>${esc(s.temperature)}</span>`:''}</div>`:''}</div></article>`).join('')}</div>`):'';
   const prepBlock=(preps.data||[]).length?section('Preparo','Algumas formas de preparo',`<div class="stack">${preps.data.map(p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}${paragraphs(p.description)}${p.technique?`<small>${esc(p.technique)}</small>`:''}</article>`).join('')}</div>`):'';
-  const video = youtubeVideos[food.slug];
-  const videoBlock = video ? `<section class="food-section food-video-section"><p class="eyebrow">ASSISTA TAMBÉM</p><h2>Vídeo sobre ${esc(food.name)}</h2>${video.id ? `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${video.id}" title="${esc(video.title || ('Vídeo sobre ' + food.name))}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>` : `<p>Confira vídeos relacionados a este alimento:</p><p><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(video.q || food.name)}" target="_blank" rel="noopener noreferrer">Ver vídeos sobre ${esc(food.name)} no YouTube</a></p>`}</section>` : '';
+  const video = youtubeVideos[food.slug] || { id: null, q: food.name + ' sabor preparo degustação' };
+  const videoIds = [video.id, ...(video.fallbackIds || [])].filter(Boolean);
+  const videoBlock = `<section class="food-section food-video-section"><p class="eyebrow">ASSISTA TAMBÉM</p><h2>Vídeo sobre ${esc(food.name)}</h2><div class="video-frame" data-video-candidates="${videoIds.join(',')}" data-video-query="${esc(video.q || food.name)}" data-video-title="${esc(video.title || ('Vídeo sobre ' + food.name))}"><div class="video-loading">Carregando vídeo…</div></div><p class="video-fallback-link"><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(video.q || food.name)}" target="_blank" rel="noopener noreferrer">Ver outros vídeos sobre ${esc(food.name)} no YouTube</a></p></section>`;
   page.innerHTML=`
     <section class="food-hero">${cover?`<img class="food-hero-cover" src="${cover}" alt="Capa de ${esc(food.name)}">`:''}<div class="food-hero-inner"><p class="eyebrow">${esc(categoryNames.join(' · ')||'Investigação gastronômica')}</p><h1>${esc(food.name)}</h1>${food.scientific_name?`<p class="scientific">${esc(food.scientific_name)}</p>`:''}<div class="answer-card"><strong>${esc(food.short_taste_answer)}</strong><p>${esc(food.editorial_taste_description)}</p></div></div></section>
     <div class="section food-content">
@@ -221,5 +226,51 @@ const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopene
       ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.sources?.notes?.startsWith('Tipo original no JSON: ')?s.sources.notes.replace('Tipo original no JSON: ',''):s.sources?.source_type||'Fonte')}</span>${sourceLink(s.sources)}</article>`))}
     </div>`;
 }
+function initYouTubeFallbacks(){
+  const frames=[...document.querySelectorAll('.video-frame[data-video-candidates]')];
+  if(!frames.length)return;
+  const startPlayers=()=>{
+    frames.forEach((frame,frameIndex)=>{
+      const ids=(frame.dataset.videoCandidates||'').split(',').filter(Boolean);
+      const fallback=frame.parentElement.querySelector('.video-fallback-link');
+      let candidateIndex=0;
+      const playCandidate=()=>{
+        if(candidateIndex>=ids.length){
+          frame.innerHTML='<div class="video-unavailable"><strong>Este vídeo não pode ser reproduzido incorporado.</strong><p>Consulte outras opções para este alimento no YouTube.</p></div>';
+          if(fallback)fallback.hidden=false;
+          return;
+        }
+        const videoId=ids[candidateIndex++];
+        const target=document.createElement('div');
+        target.id='youtube-player-'+frameIndex+'-'+candidateIndex;
+        frame.replaceChildren(target);
+        new YT.Player(target.id,{
+          videoId,
+          width:'100%',
+          height:'100%',
+          playerVars:{playsinline:1,rel:0},
+          events:{
+            onError:()=>playCandidate()
+          }
+        });
+      };
+      if(ids.length)playCandidate();
+      else{
+        frame.innerHTML='<div class="video-unavailable"><strong>Vídeo relacionado</strong><p>Abra a busca do YouTube para escolher um vídeo disponível.</p></div>';
+        if(fallback)fallback.hidden=false;
+      }
+    });
+  };
+  if(window.YT&&window.YT.Player){startPlayers();return;}
+  window.onYouTubeIframeAPIReady=startPlayers;
+  if(!document.querySelector('script[data-youtube-iframe-api]')){
+    const script=document.createElement('script');
+    script.src='https://www.youtube.com/iframe_api';
+    script.dataset.youtubeIframeApi='true';
+    document.head.appendChild(script);
+  }
+}
 load();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initYouTubeFallbacks);
+else initYouTubeFallbacks();
 // Trigger GitHub Pages rebuild for the new pepino-do-mar post.
