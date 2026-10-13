@@ -225,6 +225,7 @@ const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopene
       ${section('Posts relacionados','Posts relacionados',relatedPosts?.length?'<div class="related-posts-grid">'+relatedPosts.map((p,i)=>foodCardRelated(p,i)).join('')+'</div>':'<p class="muted">Ainda não há posts relacionados.</p>')}
       ${section('Fontes','De onde vieram as informações?',list(sources.data||[],s=>`<article class="source-card"><span>${esc(s.sources?.notes?.startsWith('Tipo original no JSON: ')?s.sources.notes.replace('Tipo original no JSON: ',''):s.sources?.source_type||'Fonte')}</span>${sourceLink(s.sources)}</article>`))}
     </div>`;
+  initYouTubeFallbacks();
 }
 function initYouTubeFallbacks(){
   const frames=[...document.querySelectorAll('.video-frame[data-video-candidates]')];
