@@ -8,6 +8,88 @@ const cleanText=v=>String(v??'').replace(/\\+n/g,'\n').replace(/\r/g,'');
 const paragraphs=text=>cleanText(text).split(/\n\s*\n/).map(x=>x.trim()).filter(Boolean).map(x=>`<p>${esc(x).replace(/\n/g,'<br>')}</p>`).join('');
 const lines=text=>cleanText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
 const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
+const youtubeVideos = {
+  "azeitona": {
+    "id": null,
+    "q": "azeitona sabor degustação"
+  },
+  "carne-de-macaco": {
+    "id": null,
+    "q": "carne de macaco comida documentário"
+  },
+  "escorpiao": {
+    "id": null,
+    "q": "escorpião comestível comida exótica"
+  },
+  "trufas": {
+    "id": null,
+    "q": "trufas negras gastronomia"
+  },
+  "carne-de-jacare": {
+    "id": "3qjesL5IAlc",
+    "title": "Como fazer carne de jacaré frita"
+  },
+  "caviar": {
+    "id": null,
+    "q": "caviar provar sabor"
+  },
+  "carne-de-porco": {
+    "id": null,
+    "q": "carne de porco preparo culinária"
+  },
+  "carne-de-elefante": {
+    "id": null,
+    "q": "carne de elefante consumo documentário"
+  },
+  "durian": {
+    "id": "PREupm-GZ5M",
+    "title": "Durian: experimentando o rei das frutas"
+  },
+  "gafanhoto": {
+    "id": "vR0bkyERpME",
+    "title": "Insetos que você pode comer"
+  },
+  "cobra": {
+    "id": null,
+    "q": "carne de cobra comida"
+  },
+  "carne-de-cobra": {
+    "id": null,
+    "q": "carne de cobra comida"
+  },
+  "aspargos": {
+    "id": null,
+    "q": "aspargos sabor preparo"
+  },
+  "pepino-do-mar": {
+    "id": "OWiE18dqyHk",
+    "title": "Pepino-do-mar é comida exótica"
+  },
+  "kimchi": {
+    "id": "3TDNpcUwWsA",
+    "title": "Fiz kimchi coreano pela primeira vez"
+  },
+  "foie-gras": {
+    "id": null,
+    "q": "foie gras gastronomia degustação"
+  },
+  "avestruz": {
+    "id": "FaP_cSIIhyY",
+    "title": "Provamos carne de avestruz"
+  },
+  "carne-de-avestruz": {
+    "id": "FaP_cSIIhyY",
+    "title": "Provamos carne de avestruz"
+  },
+  "carne-de-baleia": {
+    "id": "zAQEq6_0jLA",
+    "title": "Carne de baleia — AFP Português"
+  },
+  "balut": {
+    "id": null,
+    "q": "balut comida filipina experimentar"
+  }
+};
 const coverImages = { 'azeitona':'/tem-gosto-do-que/images/azeitona%20capa.webp', 'carne-de-macaco':'/tem-gosto-do-que/images/carne%20de%20macaco%20capa.webp', 'escorpiao':'/tem-gosto-do-que/images/escorpi%C3%A3o%20capa.webp', 'trufas':'/tem-gosto-do-que/images/trufas%20capa.webp', 'carne-de-jacare':'/tem-gosto-do-que/images/jacar%C3%A9%20capa.webp', 'caviar':'/tem-gosto-do-que/images/caviar%20capa.webp', 'carne-de-porco':'/tem-gosto-do-que/images/porco%20capa.webp', 'carne-de-elefante':'/tem-gosto-do-que/images/elefante%20capa.webp', 'durian':'/tem-gosto-do-que/images/durian%20capa.webp', 'gafanhoto':'/tem-gosto-do-que/images/gafanhoto%20capa.webp', 'cobra':'/tem-gosto-do-que/images/cobra%20capa.webp', 'carne-de-cobra':'/tem-gosto-do-que/images/cobra%20capa.webp', 'aspargos':'/tem-gosto-do-que/images/aspargos%20capa.webp', 'pepino-do-mar':'/tem-gosto-do-que/images/Pepino%20do%20mar%20capa.webp', 'kimchi':'/tem-gosto-do-que/images/Kimchi.webp', 'foie-gras':'/tem-gosto-do-que/images/Foie%20gras%20capa.webp', 'avestruz':'/tem-gosto-do-que/images/Avestruz%20capa.webp', 'carne-de-avestruz':'/tem-gosto-do-que/images/Avestruz%20capa.webp', 'carne-de-baleia':'/tem-gosto-do-que/images/Baleia%20capa.webp', 'balut':'/tem-gosto-do-que/images/Balut%20capa.webp' };
 const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'';
 
@@ -118,9 +200,12 @@ const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopene
   const historyBlock=(history.data||[]).length?section('Linha do tempo','A história de '+food.name,list(history.data||[],h=>`<article class="timeline-item"><span>${esc(h.period_label)}</span><div><h3>${esc(h.title)}</h3>${paragraphs(h.content)}</div></article>`)):'';
   const stepsBlock=(steps.data||[]).length?section('Da origem ao prato','Como chega à mesa',`<div class="stack">${steps.data.map(s=>`<article class="step-card"><span class="step-number">${s.step_order}</span><div><h3>${esc(s.title)}</h3>${paragraphs(s.description)}${s.technique?`<small>${esc(s.technique)}</small>`:''}${s.duration||s.temperature?`<div class="process-meta">${s.duration?`<span>${esc(s.duration)}</span>`:''}${s.temperature?`<span>${esc(s.temperature)}</span>`:''}</div>`:''}</div></article>`).join('')}</div>`):'';
   const prepBlock=(preps.data||[]).length?section('Preparo','Algumas formas de preparo',`<div class="stack">${preps.data.map(p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}${paragraphs(p.description)}${p.technique?`<small>${esc(p.technique)}</small>`:''}</article>`).join('')}</div>`):'';
+  const video = youtubeVideos[food.slug];
+  const videoBlock = video ? `<section class="food-section food-video-section"><p class="eyebrow">ASSISTA TAMBÉM</p><h2>Vídeo sobre ${esc(food.name)}</h2>${video.id ? `<div class="video-frame"><iframe src="https://www.youtube-nocookie.com/embed/${video.id}" title="${esc(video.title || ('Vídeo sobre ' + food.name))}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>` : `<p>Confira vídeos relacionados a este alimento:</p><p><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(video.q || food.name)}" target="_blank" rel="noopener noreferrer">Ver vídeos sobre ${esc(food.name)} no YouTube</a></p>`}</section>` : '';
   page.innerHTML=`
     <section class="food-hero">${cover?`<img class="food-hero-cover" src="${cover}" alt="Capa de ${esc(food.name)}">`:''}<div class="food-hero-inner"><p class="eyebrow">${esc(categoryNames.join(' · ')||'Investigação gastronômica')}</p><h1>${esc(food.name)}</h1>${food.scientific_name?`<p class="scientific">${esc(food.scientific_name)}</p>`:''}<div class="answer-card"><strong>${esc(food.short_taste_answer)}</strong><p>${esc(food.editorial_taste_description)}</p></div></div></section>
     <div class="section food-content">
+      ${videoBlock}
       ${section('O que é?','O que é?',`<div class="overview-copy">${paragraphs(food.what_is||food.summary)}</div><div class="fact-grid"><article class="fact-card"><span>Origem</span><strong>${esc(food.origin_summary||'Não há informação suficientemente confirmada nas fontes consultadas.')}</strong></article><article class="fact-card"><span>${food.slug==='balut'?'Tempo de incubação e preparo':'Tempo até a colheita / abate / preparo'}</span><strong>${esc(food.time_to_harvest_or_ready||'Não há informação suficientemente confirmada nas fontes consultadas.')}</strong></article><article class="fact-card"><span>Primeiro uso conhecido</span><strong>${esc(food.first_known_use||'Não há uma data de primeiro uso confirmada nas fontes consultadas.')}</strong></article><article class="fact-card"><span>${food.slug==='balut'?'Quando é produzido':'Quando é colhido / abatido'}</span><strong>${esc(food.harvest_window||'Não há uma época universal confirmada nas fontes consultadas.')}</strong></article></div>`)}
       ${section('Perfil de sabor','Como é o sabor?',`${bars?`<div class="taste-grid">${bars}</div>`:''}${profileNote}<div class="two-columns"><div><h3>Textura</h3>${paragraphs(food.texture||'Não há descrição de textura suficientemente sustentada nas fontes reunidas.')}</div><div><h3>Aroma</h3>${paragraphs(food.aroma||'Não há descrição de aroma suficientemente sustentada nas fontes reunidas.')}</div></div>`)}
       ${section('Relatos reunidos','O que as pessoas dizem?',`<article class="report-narrative">${paragraphs(food.taste_narrative||'Os relatos ainda estão sendo reunidos e comparados.')}</article>`)}
