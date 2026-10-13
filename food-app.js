@@ -16,7 +16,8 @@ const youtubeVideos = {
     "q": "azeitonas sabor degustação culinária"
   },
   "carne-de-macaco": {
-    "id": null,
+    "id": "2FlI1gp5S4M",
+    "title": "Comidas mais exóticas da América Latina",
     "q": "carne de macaco comida documentário"
   },
   "escorpiao": {
@@ -45,7 +46,8 @@ const youtubeVideos = {
     "q": "carne de porco preparo culinária"
   },
   "carne-de-elefante": {
-    "id": null,
+    "id": "qIuuBR2CPJE",
+    "title": "Por que não comemos carne de elefante?",
     "q": "carne de elefante consumo documentário"
   },
   "durian": {
@@ -61,7 +63,8 @@ const youtubeVideos = {
     "q": "carne de cobra comida"
   },
   "carne-de-cobra": {
-    "id": null,
+    "id": "aZCePm0Z7Oc",
+    "title": "Comida exótica nas profundezas da selva",
     "q": "carne de cobra comida"
   },
   "aspargos": {
@@ -81,7 +84,8 @@ const youtubeVideos = {
     "title": "Fiz kimchi coreano pela primeira vez"
   },
   "foie-gras": {
-    "id": null,
+    "id": "_8udctdninm",
+    "title": "Inside a Foie Gras Farm",
     "q": "foie gras gastronomia degustação"
   },
   "avestruz": {
