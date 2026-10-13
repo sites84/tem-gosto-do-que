@@ -38,7 +38,7 @@ const coverImages = {
 
 function foodCard(food, index=0) {
   const number = String(index + 1).padStart(2, '0');
-  const cover = coverImages[food.slug];
+  const cover = food.main_image_url || coverImages[food.slug];
   return `<a class="food-card featured-food-card${cover ? ' has-cover' : ''}" href="posts/${encodeURIComponent(food.slug) + "/"}">
     ${cover ? `<img class="food-card-cover" src="${cover}" alt="Capa de ${escapeHtml(food.name)}" loading="lazy">` : ''}
     <span class="food-card-number">${number}</span>
@@ -55,7 +55,7 @@ async function loadRecentPosts() {
   const recentList = document.querySelector('#recent-list');
   if (!recentList) return;
   recentList.innerHTML = '<p class="loading">Carregando posts recentes...</p>';
-  const { data, error } = await db.from('foods').select('id,name,slug,summary,short_taste_answer,status,updated_at').eq('status','published').order('updated_at',{ascending:false}).limit(8);
+  const { data, error } = await db.from('foods').select('id,name,slug,summary,short_taste_answer,main_image_url,status,updated_at').eq('status','published').order('updated_at',{ascending:false}).limit(8);
   if (error) { recentList.innerHTML = '<p class="loading">Não foi possível carregar os posts recentes.</p>'; return; }
   recentList.innerHTML = (data||[]).map(foodCard).join('') || '<p class="loading">Ainda não há posts publicados.</p>';
 }
