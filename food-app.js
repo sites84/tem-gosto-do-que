@@ -97,6 +97,12 @@ const youtubeVideos = {
     "id": "FaP_cSIIhyY",
     "title": "Provamos carne de avestruz"
   },
+  "carne-de-cachorro": {
+    "id": "cV-2OqNnluI",
+    "fallbackIds": ["JFEztbo1GLA"],
+    "title": "South Korea is banning dog meat. Why now? — CBC News",
+    "q": "carne de cachorro Coreia do Sul proibição documentário"
+  },
   "carne-de-baleia": {
     "id": "zAQEq6_0jLA",
     "fallbackIds": ["VGy4wiocoFg"],
@@ -108,7 +114,7 @@ const youtubeVideos = {
     "title": "Eating Balut in the Philippines"
   }
 };
-const coverImages = { 'azeitona':'/tem-gosto-do-que/images/azeitona%20capa.webp', 'carne-de-macaco':'/tem-gosto-do-que/images/carne%20de%20macaco%20capa.webp', 'escorpiao':'/tem-gosto-do-que/images/escorpi%C3%A3o%20capa.webp', 'trufas':'/tem-gosto-do-que/images/trufas%20capa.webp', 'carne-de-jacare':'/tem-gosto-do-que/images/jacar%C3%A9%20capa.webp', 'caviar':'/tem-gosto-do-que/images/caviar%20capa.webp', 'carne-de-porco':'/tem-gosto-do-que/images/porco%20capa.webp', 'carne-de-elefante':'/tem-gosto-do-que/images/elefante%20capa.webp', 'durian':'/tem-gosto-do-que/images/durian%20capa.webp', 'gafanhoto':'/tem-gosto-do-que/images/gafanhoto%20capa.webp', 'cobra':'/tem-gosto-do-que/images/cobra%20capa.webp', 'carne-de-cobra':'/tem-gosto-do-que/images/cobra%20capa.webp', 'aspargos':'/tem-gosto-do-que/images/aspargos%20capa.webp', 'pepino-do-mar':'/tem-gosto-do-que/images/Pepino%20do%20mar%20capa.webp', 'kimchi':'/tem-gosto-do-que/images/Kimchi.webp', 'foie-gras':'/tem-gosto-do-que/images/Foie%20gras%20capa.webp', 'avestruz':'/tem-gosto-do-que/images/Avestruz%20capa.webp', 'carne-de-avestruz':'/tem-gosto-do-que/images/Avestruz%20capa.webp', 'carne-de-baleia':'/tem-gosto-do-que/images/Baleia%20capa.webp', 'balut':'/tem-gosto-do-que/images/Balut%20capa.webp' };
+const coverImages = { 'azeitona':'/tem-gosto-do-que/images/azeitona%20capa.webp', 'carne-de-macaco':'/tem-gosto-do-que/images/carne%20de%20macaco%20capa.webp', 'escorpiao':'/tem-gosto-do-que/images/escorpi%C3%A3o%20capa.webp', 'trufas':'/tem-gosto-do-que/images/trufas%20capa.webp', 'carne-de-jacare':'/tem-gosto-do-que/images/jacar%C3%A9%20capa.webp', 'caviar':'/tem-gosto-do-que/images/caviar%20capa.webp', 'carne-de-porco':'/tem-gosto-do-que/images/porco%20capa.webp', 'carne-de-elefante':'/tem-gosto-do-que/images/elefante%20capa.webp', 'durian':'/tem-gosto-do-que/images/durian%20capa.webp', 'gafanhoto':'/tem-gosto-do-que/images/gafanhoto%20capa.webp', 'cobra':'/tem-gosto-do-que/images/cobra%20capa.webp', 'carne-de-cobra':'/tem-gosto-do-que/images/cobra%20capa.webp', 'aspargos':'/tem-gosto-do-que/images/aspargos%20capa.webp', 'pepino-do-mar':'/tem-gosto-do-que/images/Pepino%20do%20mar%20capa.webp', 'kimchi':'/tem-gosto-do-que/images/Kimchi.webp', 'foie-gras':'/tem-gosto-do-que/images/Foie%20gras%20capa.webp', 'avestruz':'/tem-gosto-do-que/images/Avestruz%20capa.webp', 'carne-de-avestruz':'/tem-gosto-do-que/images/Avestruz%20capa.webp', 'carne-de-cachorro':'https://s.yimg.com/ny/api/res/1.2/1o8TqxJNdW_4424uoZcL9Q--/YXBwaWQ9aGlnaGxhbmRlcjt3PTk2MDtoPTY0MDtjZj13ZWJw/https%3A/media-mbst-pub-ue1.s3.amazonaws.com/creatr-uploaded-images/2020-05/9d8ebb50-8b46-11ea-b2d7-882ea11741f9', 'carne-de-baleia':'/tem-gosto-do-que/images/Baleia%20capa.webp', 'balut':'/tem-gosto-do-que/images/Balut%20capa.webp' };
 const list=(items,renderer)=>items.length?`<div class="stack">${items.map(renderer).join('')}</div>`:'';
 
 function parseMyths(content){
