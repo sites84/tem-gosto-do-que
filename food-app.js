@@ -10,19 +10,23 @@ const lines=text=>cleanText(text).split(/\n+/).map(x=>x.trim()).filter(Boolean);
 const section=(eyebrow,title,body)=>`<section class="food-section"><p class="eyebrow">${esc(eyebrow)}</p><h2>${esc(title)}</h2>${body}</section>`;
 const youtubeVideos = {
   "azeitona": {
-    "id": null,
-    "q": "azeitona sabor degustação"
+    "id": "MI13WTI8bl0",
+    "fallbackIds": ["l_ZkvXww180"],
+    "title": "Olive oil varietals and flavors — International Olive Council",
+    "q": "azeitonas sabor degustação culinária"
   },
   "carne-de-macaco": {
     "id": null,
     "q": "carne de macaco comida documentário"
   },
   "escorpiao": {
-    "id": null,
+    "id": "ecA9u8TSVaE",
+    "title": "Escorpião comestível",
     "q": "escorpião comestível comida exótica"
   },
   "trufas": {
-    "id": null,
+    "id": "l_ZkvXww180",
+    "title": "O que são as trufas negras? Chef Silvia Percussi explica",
     "q": "trufas negras gastronomia"
   },
   "carne-de-jacare": {
@@ -30,7 +34,8 @@ const youtubeVideos = {
     "title": "Como fazer carne de jacaré frita"
   },
   "caviar": {
-    "id": null,
+    "id": "htdc-GIAE3c",
+    "title": "We tried caviar with every fast food",
     "q": "caviar provar sabor"
   },
   "carne-de-porco": {
