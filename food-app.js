@@ -74,19 +74,20 @@ const youtubeVideos = {
     "q": "aspargos sabor preparo"
   },
   "pepino-do-mar": {
-    "id": "OWiE18dqyHk",
-    "fallbackIds": ["wU4VWpMrH5Q"],
-    "title": "Pepino-do-mar é comida exótica",
-    "q": "pepino do mar comida degustação"
+    "id": "Yj5gzxm-uEs",
+    "fallbackIds": ["H-6vgbWFvjA", "wU4VWpMrH5Q"],
+    "title": "Korean Street Food - Sea Cucumber Seafood Korea",
+    "q": "sea cucumber food eating pepino do mar comida"
   },
   "kimchi": {
     "id": "3TDNpcUwWsA",
     "title": "Fiz kimchi coreano pela primeira vez"
   },
   "foie-gras": {
-    "id": "_8udctdninm",
-    "title": "Inside a Foie Gras Farm",
-    "q": "foie gras gastronomia degustação"
+    "id": "hOcy42aihso",
+    "fallbackIds": ["Zu4sFYvZw8I", "_8udctdninm"],
+    "title": "Foie Gras Recipe | Michy’s Munchies — South Florida PBS",
+    "q": "foie gras receita preparo degustação"
   },
   "avestruz": {
     "id": "FaP_cSIIhyY",
