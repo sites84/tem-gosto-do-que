@@ -34,7 +34,9 @@ const youtubeVideos = {
     "q": "caviar provar sabor"
   },
   "carne-de-porco": {
-    "id": null,
+    "id": "7o38HyKyKkE",
+    "fallbackIds": ["uaGhWuH1ptw"],
+    "title": "8 receitas irresistíveis com carne de porco",
     "q": "carne de porco preparo culinária"
   },
   "carne-de-elefante": {
@@ -58,7 +60,9 @@ const youtubeVideos = {
     "q": "carne de cobra comida"
   },
   "aspargos": {
-    "id": null,
+    "id": "zOlQCGXnJp0",
+    "fallbackIds": ["wLR49GqzThs"],
+    "title": "Creme de aspargos — Receitas Zaffari",
     "q": "aspargos sabor preparo"
   },
   "pepino-do-mar": {
@@ -206,7 +210,9 @@ const sourceLink=s=>s?.url?`<a href="${esc(s.url)}" target="_blank" rel="noopene
   const prepBlock=(preps.data||[]).length?section('Preparo','Algumas formas de preparo',`<div class="stack">${preps.data.map(p=>`<article class="prep-card"><h3>${esc(p.name)}</h3>${p.region?`<span>${esc(p.region)}</span>`:''}${paragraphs(p.description)}${p.technique?`<small>${esc(p.technique)}</small>`:''}</article>`).join('')}</div>`):'';
   const video = youtubeVideos[food.slug] || { id: null, q: food.name + ' sabor preparo degustação' };
   const videoIds = [video.id, ...(video.fallbackIds || [])].filter(Boolean);
-  const videoBlock = `<section class="food-section food-video-section"><p class="eyebrow">ASSISTA TAMBÉM</p><h2>Vídeo sobre ${esc(food.name)}</h2><div class="video-frame" data-video-candidates="${videoIds.join(',')}" data-video-query="${esc(video.q || food.name)}" data-video-title="${esc(video.title || ('Vídeo sobre ' + food.name))}"><div class="video-loading">Carregando vídeo…</div></div><p class="video-fallback-link"><a href="https://www.youtube.com/results?search_query=${encodeURIComponent(video.q || food.name)}" target="_blank" rel="noopener noreferrer">Ver outros vídeos sobre ${esc(food.name)} no YouTube</a></p></section>`;
+  const videoQueryUrl = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(video.q || food.name);
+  const videoPreview = `<a class="video-preview-card" href="${videoQueryUrl}" target="_blank" rel="noopener noreferrer"><span class="video-preview-play">▶</span><span class="video-preview-copy"><strong>Assistir a um vídeo sobre ${esc(food.name)}</strong><small>Escolher vídeo no YouTube</small></span><span class="video-preview-brand">YouTube</span></a>`;
+  const videoBlock = `<section class="food-section food-video-section"><p class="eyebrow">ASSISTA TAMBÉM</p><h2>Vídeo sobre ${esc(food.name)}</h2><div class="video-frame" data-video-candidates="${videoIds.join(',')}" data-video-query="${esc(video.q || food.name)}" data-video-title="${esc(video.title || ('Vídeo sobre ' + food.name))}">${videoIds.length ? '<div class="video-loading">Carregando vídeo…</div>' : videoPreview}</div><p class="video-fallback-link"><a href="${videoQueryUrl}" target="_blank" rel="noopener noreferrer">Ver outros vídeos sobre ${esc(food.name)} no YouTube</a></p></section>`;
   page.innerHTML=`
     <section class="food-hero">${cover?`<img class="food-hero-cover" src="${cover}" alt="Capa de ${esc(food.name)}">`:''}<div class="food-hero-inner"><p class="eyebrow">${esc(categoryNames.join(' · ')||'Investigação gastronômica')}</p><h1>${esc(food.name)}</h1>${food.scientific_name?`<p class="scientific">${esc(food.scientific_name)}</p>`:''}<div class="answer-card"><strong>${esc(food.short_taste_answer)}</strong><p>${esc(food.editorial_taste_description)}</p></div></div></section>
     <div class="section food-content">
@@ -237,7 +243,12 @@ function initYouTubeFallbacks(){
       let candidateIndex=0;
       const playCandidate=()=>{
         if(candidateIndex>=ids.length){
-          frame.innerHTML='<div class="video-unavailable"><strong>Este vídeo não pode ser reproduzido incorporado.</strong><p>Consulte outras opções para este alimento no YouTube.</p></div>';
+          const lastId=ids[ids.length-1];
+          const searchUrl='https://www.youtube.com/results?search_query='+encodeURIComponent(frame.dataset.videoQuery||'vídeo sobre alimento');
+          const preview=lastId
+            ? '<a class="video-preview-card" href="https://www.youtube.com/watch?v='+encodeURIComponent(lastId)+'" target="_blank" rel="noopener noreferrer"><img class="video-preview-thumb" src="https://i.ytimg.com/vi/'+encodeURIComponent(lastId)+'/hqdefault.jpg" alt="" loading="lazy"><span class="video-preview-play">▶</span><span class="video-preview-copy"><strong>Assistir vídeo no YouTube</strong><small>A reprodução incorporada está indisponível</small></span><span class="video-preview-brand">YouTube</span></a>'
+            : '<a class="video-preview-card" href="'+searchUrl+'" target="_blank" rel="noopener noreferrer"><span class="video-preview-play">▶</span><span class="video-preview-copy"><strong>Assistir a um vídeo sobre '+(frame.dataset.videoTitle||'este alimento')+'</strong><small>Escolher vídeo no YouTube</small></span><span class="video-preview-brand">YouTube</span></a>';
+          frame.innerHTML=preview;
           if(fallback)fallback.hidden=false;
           return;
         }
