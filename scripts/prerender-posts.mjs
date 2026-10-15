@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// Rebuild editorial pages after the completion of the dog-meat post's evidence-qualified profile fields.
 import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
